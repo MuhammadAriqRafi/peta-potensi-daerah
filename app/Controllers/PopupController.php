@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\Popup;
-use BackedEnum;
 use Config\Services;
 
 class PopupController extends BaseController
@@ -20,7 +19,8 @@ class PopupController extends BaseController
     {
         $data = [
             'title' => 'Pop Up Manager',
-            'popups' => $this->popup->findAll()
+            'popups' => $this->popup->findAll(),
+            'validation' => Services::validation()
         ];
 
         return view('popup/index', $data);
@@ -29,18 +29,35 @@ class PopupController extends BaseController
     public function store()
     {
         if (!$this->validate([
-            'title' => 'required'
+            'title' => 'required',
+            'image' => [
+                'rules' => 'uploaded[image]|max_size[image,1024]|is_image[image]|mime_in[image,image/jpg,image/jpeg,image/png]',
+                'errors' => [
+                    'uploaded' => 'Image is required'
+                ]
+            ]
         ])) {
-            $validation = Services::validation();
-            return redirect()->back()->withInput()->with('validation', $validation);
+            return redirect()->back()->withInput();
         }
+
+        // Retrieve image file from input field
+        $image = $this->request->getFile('image');
+        $imageName = storeAs($image);
+
+        $this->popup->save([
+            'title' => $this->request->getVar('title'),
+            'value' => $imageName
+        ]);
+
+        return redirect()->back()->with('success', 'Pop up berhasil ditambahkan!');
     }
 
     public function edit($id = null)
     {
         $data = [
             'title' => 'Edit Popup',
-            'popup' => $this->popup->where('popup_id', base64_decode($id))->first()
+            'popup' => $this->popup->find(base64_decode($id)),
+            'validation' => Services::validation()
         ];
 
         return view('popup/edit', $data);
@@ -48,13 +65,42 @@ class PopupController extends BaseController
 
     public function update($id = null)
     {
-        dd($this->request->getVar());
+        if (!$this->validate([
+            'title' => 'required',
+            'image' => 'max_size[image,1024]|is_image[image]|mime_in[image,image/jpg,image/jpeg,image/png]',
+        ])) {
+            return redirect()->back()->withInput();
+        }
+
+        $image = $this->request->getFile('image');
+        $oldImage = $this->request->getVar('oldImage');
+
+        if ($image->getError() != 4) {
+            dd('ga error');
+            $imageName = storeAs($image);
+            unlink('img/' . $oldImage);
+        } else {
+            $imageName = $oldImage;
+        }
+
+        $this->popup->save([
+            'popup_id' => $id,
+            'title' => $this->request->getVar('title'),
+            'value' => $imageName
+        ]);
+
+        return redirect()->back()->with('success', 'Pop up berhasil diubah!');
     }
 
     public function destroy($id = null)
     {
-        // TODO: Delete data here
-        session()->setFlashdata('success', 'Pop Up berhasil dihapus!');
-        return redirect()->back();
+        // Find current popup record
+        $popup = $this->popup->find($id);
+
+        // Delete image file of the current record
+        unlink('img/' . $popup['value']);
+
+        $this->popup->delete($id);
+        return redirect()->back()->with('success', 'Pop Up berhasil dihapus!');
     }
 }

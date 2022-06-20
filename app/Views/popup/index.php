@@ -19,11 +19,18 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="title" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="title" name="title" placeholder="name@example.com">
+                        <input type="text" class="form-control <?= $validation->hasError('title') ? 'is-invalid' : ''; ?>" id="title" name="title" autofocus value="<?= old('title'); ?>">
+                        <div class="invalid-feedback">
+                            <?= $validation->getError('title'); ?>
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label for="value" class="form-label">Gambar Pop Up</label>
-                        <input class="form-control" type="file" id="value" name="value">
+                        <label for="image" class="form-label">Gambar Pop Up</label><br>
+                        <img src="#" height="100" class="img-thumbnail mb-3 img-preview">
+                        <input class="form-control <?= $validation->hasError('image') ? 'is-invalid' : ''; ?>" type="file" id="image" name="image" onchange="previewImg()">
+                        <div class="invalid-feedback">
+                            <?= $validation->getError('image'); ?>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -34,7 +41,6 @@
         </div>
     </div>
 </div>
-
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
@@ -63,11 +69,11 @@
                     <tr>
                         <th scope="row"><?= $i++; ?></th>
                         <td><?= $popup['title']; ?></td>
-                        <td><?= $popup['value']; ?></td>
+                        <td><?= $popup['value'] ?? '-'; ?></td>
                         <td>
                             <form action="<?= route_to('backend.popups.delete', $popup['popup_id']); ?>" method="POST">
-                                <a href="<?= route_to('backend.popups.edit', base64_encode($popup['popup_id'])); ?>" class="btn btn-sm btn-warning">Ubah</a>
                                 <input type="hidden" name="_method" value="DELETE">
+                                <a href="<?= route_to('backend.popups.edit', base64_encode($popup['popup_id'])); ?>" class="btn btn-sm btn-warning">Ubah</a>
                                 <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('apakah anda yakin?');">Hapus</button>
                             </form>
                         </td>
@@ -80,4 +86,19 @@
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam neque similique et rem dolorum sint repellat, aut eum eveniet non?</p>
     </div>
 </div>
+<?= $this->endSection(); ?>
+
+<?= $this->section('script'); ?>
+<script>
+    function previewImg() {
+        const image = document.querySelector('#image');
+        const imgPreview = document.querySelector('.img-preview');
+        const fileImage = new FileReader();
+
+        fileImage.readAsDataURL(image.files[0]);
+        fileImage.onload = function(e) {
+            imgPreview.src = e.target.result;
+        }
+    }
+</script>
 <?= $this->endSection(); ?>

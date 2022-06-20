@@ -49,16 +49,15 @@ $routes->group('backend', function ($routes) {
         $routes->get('/', 'PopupController::index', ['as' => 'backend.popups.index']);
         $routes->post('/', 'PopupController::store', ['as' => 'backend.popups.store']);
         $routes->get('(:any)/edit', 'PopupController::edit/$1', ['as' => 'backend.popups.edit']);
-        $routes->patch('(:num)', 'PopupController::update/$1', ['as' => 'backend.popups.update']);
+        $routes->patch('(:any)', 'PopupController::update/$1', ['as' => 'backend.popups.update']);
         $routes->delete('(:num)', 'PopupController::destroy/$1', ['as' => 'backend.popups.delete']);
     });
 
     // Settings Routes
     $routes->group('settings', function ($routes) {
         $routes->get('/', 'SettingController::index', ['as' => 'backend.settings.index']);
-        $routes->post('/', 'SettingController::store', ['as' => 'backend.settings.store']);
-        $routes->patch('/', 'SettingController::update');
-        $routes->delete('/(:any)', 'SettingController::destroy/$1', ['as' => 'backend.settings.destroy']);
+        $routes->get('/', 'SettingController::edit', ['as' => 'backend.settings.edit']);
+        $routes->patch('/', 'SettingController::update', ['as' => 'backend.settigns.update']);
     });
 
     // Menu Manager Routes
