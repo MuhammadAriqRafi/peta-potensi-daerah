@@ -35,7 +35,40 @@ $routes->set404Override();
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'Home::index');
+
+// Static Page Routes
+$routes->get('/', 'PageController::index', ['as' => 'home']);
+$routes->get('/tentang', 'PageController::tentang');
+$routes->get('/pariwisata/(:alpha)', 'PariwisataController::index/$1');
+
+// Backend Routes
+$routes->group('backend', function ($routes) {
+
+    // Popup Routes
+    $routes->group('popups', function ($routes) {
+        $routes->get('/', 'PopupController::index', ['as' => 'backend.popups.index']);
+        $routes->post('/', 'PopupController::store', ['as' => 'backend.popups.store']);
+        $routes->get('(:any)/edit', 'PopupController::edit/$1', ['as' => 'backend.popups.edit']);
+        $routes->patch('(:num)', 'PopupController::update/$1', ['as' => 'backend.popups.update']);
+        $routes->delete('(:num)', 'PopupController::destroy/$1', ['as' => 'backend.popups.delete']);
+    });
+
+    // Settings Routes
+    $routes->group('settings', function ($routes) {
+        $routes->get('/', 'SettingController::index', ['as' => 'backend.settings.index']);
+        $routes->post('/', 'SettingController::store', ['as' => 'backend.settings.store']);
+        $routes->patch('/', 'SettingController::update');
+        $routes->delete('/(:any)', 'SettingController::destroy/$1', ['as' => 'backend.settings.destroy']);
+    });
+
+    // Menu Manager Routes
+    $routes->group('menus', function ($routes) {
+        $routes->get('/', 'MenuController::index', ['as' => 'backend.menus.index']);
+        $routes->post('/', 'MenuController::store');
+        $routes->patch('/', 'MenuController::update');
+        $routes->delete('/', 'MenuController::destroy');
+    });
+});
 
 /*
  * --------------------------------------------------------------------
