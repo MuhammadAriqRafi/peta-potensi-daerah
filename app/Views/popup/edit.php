@@ -14,7 +14,7 @@
     <input type="hidden" name="_method" value="PATCH">
     <input type="hidden" name="oldImage" value="<?= $popup['value']; ?>">
     <div class="mb-3">
-        <label for="title" class="form-label">Email address</label>
+        <label for="title" class="form-label">Title</label>
         <input type="text" name="title" class="form-control <?= ($validation->hasError('title') ? 'is-invalid' : ''); ?>" id="title" value="<?= (old('title', $popup['title'])); ?>">
         <?php if ($validation->hasError('title')) : ?>
             <div class="invalid-feedback">

@@ -56,16 +56,15 @@ $routes->group('backend', function ($routes) {
     // Settings Routes
     $routes->group('settings', function ($routes) {
         $routes->get('/', 'SettingController::index', ['as' => 'backend.settings.index']);
-        $routes->get('/', 'SettingController::edit', ['as' => 'backend.settings.edit']);
-        $routes->patch('/', 'SettingController::update', ['as' => 'backend.settigns.update']);
+        $routes->get('(:any)/edit', 'SettingController::edit/$1', ['as' => 'backend.settings.edit']);
+        $routes->patch('(:num)', 'SettingController::update/$1', ['as' => 'backend.settings.update']);
     });
 
     // Menu Manager Routes
     $routes->group('menus', function ($routes) {
         $routes->get('/', 'MenuController::index', ['as' => 'backend.menus.index']);
-        $routes->post('/', 'MenuController::store');
-        $routes->patch('/', 'MenuController::update');
-        $routes->delete('/', 'MenuController::destroy');
+        $routes->get('/(:any)/edit', 'MenuController::index', ['as' => 'backend.menus.index']);
+        $routes->patch('/(:num)', 'MenuController::update/$1', ['as' => 'backend.menus.update']);
     });
 });
 

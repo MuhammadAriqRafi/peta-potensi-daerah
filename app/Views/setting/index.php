@@ -8,7 +8,7 @@
                 <th><?= $setting['keyword']; ?></th>
                 <td><?= $setting['value']; ?></td>
                 <td>
-                    <a href="#" class="btn btn-sm btn-outline-warning">Edit</a>
+                    <a href="<?= route_to('backend.settings.edit', base64_encode($setting['setting_id'])); ?>" class="btn btn-sm btn-outline-warning">Edit</a>
                 </td>
             </tr>
         <?php endforeach ?>

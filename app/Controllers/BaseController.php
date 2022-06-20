@@ -35,7 +35,7 @@ abstract class BaseController extends Controller
      *
      * @var array
      */
-    protected $helpers = ['image_upload'];
+    protected $helpers = ['file_upload'];
 
     /**
      * Constructor.

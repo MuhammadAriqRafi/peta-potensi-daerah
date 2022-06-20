@@ -2,77 +2,41 @@
 
 namespace App\Controllers;
 
-use CodeIgniter\RESTful\ResourceController;
+use App\Controllers\BaseController;
+use App\Models\Menu;
 
-class MenuController extends ResourceController
+class MenuController extends BaseController
 {
-    /**
-     * Return an array of resource objects, themselves in array format
-     *
-     * @return mixed
-     */
+    protected $menus;
+
+    public function __construct()
+    {
+        $this->menus = new Menu();
+    }
+
     public function index()
     {
-        //
+        $data = [
+            'title' => 'Menu',
+            'menus' => $this->menus->findAll()
+        ];
+
+        return view('menu/index', $data);
     }
 
-    /**
-     * Return the properties of a resource object
-     *
-     * @return mixed
-     */
-    public function show($id = null)
-    {
-        //
-    }
-
-    /**
-     * Return a new resource object, with default properties
-     *
-     * @return mixed
-     */
-    public function new()
-    {
-        //
-    }
-
-    /**
-     * Create a new resource object, from "posted" parameters
-     *
-     * @return mixed
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Return the editable properties of a resource object
-     *
-     * @return mixed
-     */
     public function edit($id = null)
     {
-        //
     }
 
-    /**
-     * Add or update a model resource, from "posted" properties
-     *
-     * @return mixed
-     */
     public function update($id = null)
     {
-        //
-    }
+        dd($this->request->getVar());
 
-    /**
-     * Delete the designated resource object from the model
-     *
-     * @return mixed
-     */
-    public function delete($id = null)
-    {
-        //
+        $this->menu->save([
+            'menu_id' => $id,
+            'title' => $this->request->getVar('title'),
+            'url' => $this->request->getVar('url'),
+            'target' => $this->request->getVar('target')
+        ]);
     }
 }
