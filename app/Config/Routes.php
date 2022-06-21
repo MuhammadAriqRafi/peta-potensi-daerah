@@ -70,7 +70,8 @@ $routes->group('backend', function ($routes) {
     // Map Settings Routes
     $routes->group('maps', function ($routes) {
         $routes->get('/', 'MapController::index', ['as' => 'backend.maps.index']);
-        $routes->get('(:any)/edit', 'MapController::edit/$1', ['as' => 'backend.maps.index']);
+        $routes->post('/', 'MapController::store', ['as' => 'backend.maps.store']);
+        $routes->get('create', 'MapController::create', ['as' => 'backend.maps.create']);
         $routes->patch('(:any)', 'MapController::update/$1', ['as' => 'backend.maps.update']);
         $routes->delete('(:any)', 'MapController::destroy/$1', ['as' => 'backend.maps.delete']);
     });

@@ -27,6 +27,8 @@
 
     <!-- Custom styles for this template -->
     <link href="dashboard.css" rel="stylesheet">
+
+    <?= $this->renderSection('css'); ?>
 </head>
 
 <body>
