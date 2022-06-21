@@ -63,8 +63,16 @@ $routes->group('backend', function ($routes) {
     // Menu Manager Routes
     $routes->group('menus', function ($routes) {
         $routes->get('/', 'MenuController::index', ['as' => 'backend.menus.index']);
-        $routes->get('/(:any)/edit', 'MenuController::index', ['as' => 'backend.menus.index']);
-        $routes->patch('/(:num)', 'MenuController::update/$1', ['as' => 'backend.menus.update']);
+        $routes->get('(:any)/edit', 'MenuController::edit/$1', ['as' => 'backend.menus.edit']);
+        $routes->patch('(:any)', 'MenuController::update/$1', ['as' => 'backend.menus.update']);
+    });
+
+    // Map Settings Routes
+    $routes->group('maps', function ($routes) {
+        $routes->get('/', 'MapController::index', ['as' => 'backend.maps.index']);
+        $routes->get('(:any)/edit', 'MapController::edit/$1', ['as' => 'backend.maps.index']);
+        $routes->patch('(:any)', 'MapController::update/$1', ['as' => 'backend.maps.update']);
+        $routes->delete('(:any)', 'MapController::destroy/$1', ['as' => 'backend.maps.delete']);
     });
 });
 

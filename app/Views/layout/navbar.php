@@ -14,7 +14,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-secondary" href="#">
+                <a class="nav-link text-secondary" href="<?= route_to('backend.maps.index'); ?>">
                     <span data-feather="file"></span>
                     Map Settings
                 </a>
