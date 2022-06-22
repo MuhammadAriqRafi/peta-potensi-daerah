@@ -40,9 +40,8 @@ class PopupController extends BaseController
             return redirect()->back()->withInput();
         }
 
-        // Retrieve image file from input field
-        $image = $this->request->getFile('image');
-        $imageName = storeAs($image, 'img', 'popup');
+        // Retrieve image file from input field\
+        $imageName = storeAs($this->request->getFile('image'), 'img', 'popup');
 
         $this->popup->save([
             'title' => $this->request->getVar('title'),
@@ -76,7 +75,6 @@ class PopupController extends BaseController
         $oldImage = $this->request->getVar('oldImage');
 
         if ($image->getError() != 4) {
-            dd('ga error');
             $imageName = storeAs($image, 'img', 'popup');
             unlink('img/' . $oldImage);
         } else {

@@ -5,7 +5,7 @@
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
-<table>
+<table class="table">
     <thead>
         <tr>
             <th>Title</th>

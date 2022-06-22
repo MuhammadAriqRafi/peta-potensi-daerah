@@ -44,6 +44,11 @@ $routes->get('/pariwisata/(:alpha)', 'PariwisataController::index/$1');
 // Backend Routes
 $routes->group('backend', function ($routes) {
 
+    // Administrator Routes
+    $routes->group('administrators', function ($routes) {
+        $routes->get('/', 'AdministratorController::index', ['as' => 'backend.administrators.index']);
+    });
+
     // Popup Routes
     $routes->group('popups', function ($routes) {
         $routes->get('/', 'PopupController::index', ['as' => 'backend.popups.index']);
@@ -74,6 +79,15 @@ $routes->group('backend', function ($routes) {
         $routes->get('create', 'MapController::create', ['as' => 'backend.maps.create']);
         $routes->patch('(:any)', 'MapController::update/$1', ['as' => 'backend.maps.update']);
         $routes->delete('(:any)', 'MapController::destroy/$1', ['as' => 'backend.maps.delete']);
+    });
+
+    // Profile Routes
+    $routes->group('profile', function ($routes) {
+        $routes->get('/', 'ProfileController::index', ['as' => 'backend.profiles.index']);
+        $routes->post('/', 'ProfileController::store', ['as' => 'backend.profiles.store']);
+        $routes->get('(:any)/edit', 'ProfileController::edit/$1', ['as' => 'backend.profiles.edit']);
+        $routes->patch('(:any)', 'ProfileController::update/$1', ['as' => 'backend.profiles.update']);
+        $routes->delete('(:any)', 'ProfileController::destroy/$1', ['as' => 'backend.profiles.destroy']);
     });
 });
 

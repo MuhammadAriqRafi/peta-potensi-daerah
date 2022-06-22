@@ -14,7 +14,7 @@ class Post extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['title', 'date_publish', 'status', 'description', 'content'];
+    protected $allowedFields    = ['post_type', 'slug', 'title', 'date_publish', 'status', 'description', 'content', 'others', 'category_id', 'image', 'kecamatan'];
 
     // Dates
     protected $useTimestamps = false;
@@ -28,6 +28,14 @@ class Post extends Model
         return $this->db->table('post')
             ->select('post_id, post.post_type, post.title, category.title as category, author, date_publish, status')
             ->join('category', 'post.category_id = category.category_id')
+            ->get()->getResultArray();
+    }
+
+    public function getProfiles()
+    {
+        return  $this->db->table('post')
+            ->select('post_id, post_type, title, author, date_publish, status')
+            ->where('post_type', 'profil')
             ->get()->getResultArray();
     }
 }

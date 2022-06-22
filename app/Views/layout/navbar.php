@@ -8,7 +8,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-secondary" href="#">
+                <a class="nav-link text-secondary" href="<?= route_to('backend.profiles.index'); ?>">
                     <span data-feather="file"></span>
                     Tentang Aplikasi
                 </a>
@@ -20,7 +20,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-secondary" href="#">
+                <a class="nav-link text-secondary" href="<?= route_to('backend.administrators.index'); ?>">
                     <span data-feather="file"></span>
                     Administrator
                 </a>

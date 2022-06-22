@@ -7,78 +7,148 @@
     }
 </style>
 
+<!-- Summernote -->
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
+<!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin="" />
 <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
 <?= $this->endSection(); ?>
 
-
 <?= $this->section('content'); ?>
+<!-- Flash Message -->
+<?php if (session()->getFlashdata('success')) : ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?= session()->getFlashdata('success'); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif ?>
+
 <form action="<?= route_to('backend.maps.store'); ?>" method="POST" enctype="multipart/form-data">
     <?= csrf_field(); ?>
+    <!-- Title Input -->
     <div class="mb-3">
-        <label for="title" class="form-label">Title</label>
-        <input type="text" name="title" class="form-control <?= ($validation->hasError('title') ? 'is-invalid' : ''); ?>" id="title" value="<?= (old('title')); ?>">
+        <label for="title" class="form-label fw-bold">Title</label>
+        <input type="text" name="title" class="form-control <?= ($validation->hasError('title') ? 'is-invalid' : ''); ?>" value="<?= (old('title')); ?>">
         <?php if ($validation->hasError('title')) : ?>
             <div class="invalid-feedback">
                 <?= $validation->getError('title'); ?>
             </div>
         <?php endif ?>
     </div>
-    <div class="mb-3">
-        <label for="kecamatan" class="form-label">Kecamatan</label>
-        <select id="kecamatan" class="form-select">
-            <option selected>Pilih Kecamatan</option>
-        </select>
+    <!-- Date Publish Date Input -->
+    <div class="mb-3 col-2">
+        <label for="date_publish" class="form-label fw-bold">Date Publish</label>
+        <input type="date" name="date_publish" class="form-control <?= ($validation->hasError('date_publish') ? 'is-invalid' : ''); ?>" value="<?= (old('date_publish', date("Y-m-d"))); ?>" min="1900-01-01" max="<?= date("Y-12-31"); ?>">
+        <?php if ($validation->hasError('date_publish')) : ?>
+            <div class="invalid-feedback">
+                <?= $validation->getError('date_publish'); ?>
+            </div>
+        <?php endif ?>
     </div>
+    <!-- Kategori Dropdown -->
     <div class="mb-3">
-        <label for="category" class="form-label">Kategori</label>
-        <select id="category" class="form-select">
+        <label for="category" class="form-label fw-bold">Kategori</label>
+        <select name="category" class="form-select <?= $validation->hasError('category') ? 'is-invalid' : ''; ?>">
+            <option value="" hidden>Pilih Kategori</option>
             <?php foreach ($categories as $category) : ?>
-                <option value="<?= $category['category_id']; ?>"><?= $category['title']; ?></option>
+                <option value="<?= base64_encode($category['category_id']); ?>" <?= old('category') == base64_encode($category['category_id']) ? 'selected' : ''; ?>><?= $category['title']; ?></option>
             <?php endforeach ?>
-            <option selected>Pilih Kategori</option>
         </select>
+        <?php if ($validation->hasError('category')) : ?>
+            <div class="invalid-feedback">
+                <?= $validation->getError('category'); ?>
+            </div>
+        <?php endif ?>
     </div>
-    <div id="map"></div>
+    <!-- Kecamatan Dropdown -->
     <div class="mb-3">
-        <label for="latitude" class="form-label">Latitude</label>
-        <input type="text" name="latitude" class="form-control <?= ($validation->hasError('latitude') ? 'is-invalid' : ''); ?>" id="latitude" value="<?= (old('latitude')); ?>">
+        <label for="kecamatan" class="form-label fw-bold">Kecamatan</label>
+        <select name="kecamatan" id="kecamatan" class="form-select <?= $validation->hasError('kecamatan') ? 'is-invalid' : ''; ?>">
+            <!-- Data is fetced using ajax request to ibnux github repo -->
+            <option value="" hidden>Pilih Kecamatan</option>
+        </select>
+        <?php if ($validation->hasError('kecamatan')) : ?>
+            <div class="invalid-feedback">
+                <?= $validation->getError('kecamatan'); ?>
+            </div>
+        <?php endif ?>
+    </div>
+    <!-- Map Location -->
+    <div id="map" class="mb-3"></div>
+    <!-- Latitude Input -->
+    <div class="mb-3">
+        <label for="latitude" class="form-label fw-bold">Latitude</label>
+        <input type="text" name="latitude" id="latitude" class="form-control <?= ($validation->hasError('latitude') ? 'is-invalid' : ''); ?>" value="<?= (old('latitude')); ?>">
         <?php if ($validation->hasError('latitude')) : ?>
             <div class="invalid-feedback">
                 <?= $validation->getError('latitude'); ?>
             </div>
         <?php endif ?>
     </div>
+    <!-- Longitude Input -->
     <div class="mb-3">
-        <label for="longitude" class="form-label">Longitude</label>
-        <input type="text" name="longitude" class="form-control <?= ($validation->hasError('longitude') ? 'is-invalid' : ''); ?>" id="longitude" value="<?= (old('longitude')); ?>">
+        <label for="longitude" class="form-label fw-bold">Longitude</label>
+        <input type="text" name="longitude" id="longitude" class="form-control <?= ($validation->hasError('longitude') ? 'is-invalid' : ''); ?>" value="<?= (old('longitude')); ?>">
         <?php if ($validation->hasError('longitude')) : ?>
             <div class="invalid-feedback">
                 <?= $validation->getError('longitude'); ?>
             </div>
         <?php endif ?>
     </div>
-    // TODO: Make radiobutton for status
+    <!-- Deskripsi Textarea -->
     <div class="mb-3">
-        <label for="cover" class="form-label">Cover</label><br>
+        <label for="description" class="form-label fw-bold">Deskripsi</label>
+        <textarea id="summernote" name="description"><?= old('description'); ?></textarea>
+        <?php if ($validation->hasError('description')) : ?>
+            <div class="invalid-feedback">
+                <?= $validation->getError('description'); ?>
+            </div>
+        <?php endif ?>
+    </div>
+    <!-- Status Radio Input -->
+    <div class="mb-3">
+        <label for="status" class="form-label fw-bold">Status</label><br>
+        <?php foreach ($statuses as $status) : ?>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="status" value="<?= $status; ?>" <?= old('status') == $status ? 'checked' : ''; ?>>
+                <label class="form-check-label" for="<?= $status; ?>"><?= ucfirst($status); ?></label>
+            </div>
+        <?php endforeach ?>
+        <?php if ($validation->hasError('status')) : ?>
+            <p class="text-danger mt-2 fs-6"><?= $validation->getError('status'); ?></p>
+        <?php endif ?>
+    </div>
+    <!-- Cover File Input -->
+    <div class="mb-3">
+        <label for="cover" class="form-label fw-bold">Cover</label><br>
         <img src="#" height="100" class="img-thumbnail mb-3 img-preview">
-        <input class="form-control <?= $validation->hasError('cover') ? 'is-invalid' : ''; ?>" type="file" id="cover" name="cover" onchange="previewImg()">
+        <input class="form-control <?= $validation->hasError('cover') ? 'is-invalid' : ''; ?>" type="file" name="cover" onchange="previewImg()">
         <div class="invalid-feedback">
             <?= $validation->getError('cover'); ?>
         </div>
     </div>
+    <!-- Video Input -->
     <div class="mb-3">
-        <label for="video" class="form-label">Video</label>
-        <input type="text" name="video" class="form-control <?= ($validation->hasError('video') ? 'is-invalid' : ''); ?>" id="video" value="<?= (old('video')); ?>">
-        <?php if ($validation->hasError('video')) : ?>
+        <label for="youtube" class="form-label fw-bold">Video</label>
+        <input type="text" name="youtube" class="form-control <?= ($validation->hasError('youtube') ? 'is-invalid' : ''); ?>" value="<?= (old('youtube')); ?>">
+        <?php if ($validation->hasError('youtube')) : ?>
             <div class="invalid-feedback">
-                <?= $validation->getError('video'); ?>
+                <?= $validation->getError('youtube'); ?>
             </div>
         <?php endif ?>
     </div>
+    <!-- Address Textarea -->
     <div class="mb-3">
-        <label for="address" class="form-label">Address</label><br>
+        <label for="address" class="form-label fw-bold">Address</label><br>
         <textarea class="form-control <?= ($validation->hasError('address') ? 'is-invalid' : ''); ?>" name="address" cols="30" rows="10"><?= old('address'); ?></textarea>
+        <?php if ($validation->hasError('address')) : ?>
+            <div class="invalid-feedback">
+                <?= $validation->getError('address'); ?>
+            </div>
+        <?php endif ?>
     </div>
 
     <button type="submit" class="btn btn-primary my-4">Ubah</button>
@@ -106,6 +176,40 @@
             console.log(error);
         });
 
+    let map = L.map('map').setView([-5.2749, 105.6882], 13);
+    const latitude = document.getElementById('latitude');
+    const longitude = document.getElementById('longitude');
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap',
+        draggable: true
+    }).addTo(map);
+
+    let marker = L.marker(new L.LatLng(-5.2749, 105.6882), {
+        draggable: true
+    }).addTo(map);
+
+    marker.on('dragend', function(e) {
+        latitude.value = marker.getLatLng().lat;
+        longitude.value = marker.getLatLng().lng;
+    });
+
+    $('#summernote').summernote({
+        placeholder: 'Hello stand alone ui',
+        tabsize: 2,
+        height: 240,
+        toolbar: [
+            ['style', ['style']],
+            ['font', ['bold', 'underline', 'clear']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['table', ['table']],
+            ['insert', ['link', 'picture', 'video']],
+            ['view', ['fullscreen', 'codeview', 'help']]
+        ]
+    });
+
     function previewImg() {
         const image = document.querySelector('#image');
         const imgPreview = document.querySelector('.img-preview');
@@ -116,12 +220,5 @@
             imgPreview.src = e.target.result;
         }
     }
-
-    let map = L.map('map').setView([51.505, -0.09], 13);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
 </script>
 <?= $this->endSection(); ?>
