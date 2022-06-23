@@ -5,16 +5,19 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\Category;
 use App\Models\Menu;
+use App\Models\Visitor;
 
 class PageController extends BaseController
 {
     protected $categories;
-    protected $menu;
+    protected $menus;
+    protected $visitors;
 
     public function __construct()
     {
         $this->categories = new Category();
-        $this->menu = new Menu();
+        $this->menus = new Menu();
+        $this->visitors = new Visitor();
     }
 
     public function index()
@@ -31,8 +34,18 @@ class PageController extends BaseController
         return view('index', $data);
     }
 
-    public function tentang()
+    public function backend_dashboard()
     {
-        return "Tentang Kami";
+        $data = [
+            'title' => 'Dashboard',
+            'visitors' => [
+                'total' => $this->visitors->countAllResults(),
+                'week' => $this->visitors->countVisitorInAWeek(),
+                'month' => $this->visitors->countVisitorInAMonth(),
+                'today' => $this->visitors->countDailyVisitor()
+            ]
+        ];
+
+        return view('index', $data);
     }
 }

@@ -96,11 +96,19 @@ class PopupController extends BaseController
         $popup = $this->popup->find($id);
 
         // Delete image file of the current record
-        unlink('img/' . $popup['value']);
+        try {
+            unlink('img/' . $popup['value']);
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', $th->getMessage());
+        }
 
         $this->popup->delete($id);
         return redirect()->back()->with('success', 'Pop Up berhasil dihapus!');
     }
 
     // TODO: Build update status functionality for popup
+    public function update_status($id)
+    {
+        # code...
+    }
 }

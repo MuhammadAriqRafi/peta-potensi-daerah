@@ -2,7 +2,7 @@
     <div class="position-sticky pt-3">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link text-secondary active" aria-current="page" href="<?= route_to('home'); ?>">
+                <a class="nav-link text-secondary active" aria-current="page" href="<?= route_to('backend.dashboard.index'); ?>">
                     <span data-feather="home"></span>
                     Dashboard
                 </a>

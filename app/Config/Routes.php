@@ -39,10 +39,12 @@ $routes->set404Override();
 // Static Page Routes
 $routes->get('/', 'PageController::index', ['as' => 'home']);
 $routes->get('/tentang', 'PageController::tentang');
-$routes->get('/pariwisata/(:alpha)', 'PariwisataController::index/$1');
 
 // Backend Routes
 $routes->group('backend', function ($routes) {
+
+    // Dashboard Routes
+    $routes->get('/', 'PageController::backend_dashboard', ['as' => 'backend.dashboard.index']);
 
     // Administrator Routes
     $routes->group('administrators', function ($routes) {
