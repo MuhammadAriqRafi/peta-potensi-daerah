@@ -101,4 +101,6 @@ class PopupController extends BaseController
         $this->popup->delete($id);
         return redirect()->back()->with('success', 'Pop Up berhasil dihapus!');
     }
+
+    // TODO: Build update status functionality for popup
 }

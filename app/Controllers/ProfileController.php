@@ -68,12 +68,30 @@ class ProfileController extends BaseController
 
     public function update($id = null)
     {
-        dd($this->request->getVar());
-        return "Update Profile";
-    }
+        if (!$this->validate([
+            'title' => 'required',
+            'date_publish' => 'required',
+            'content' => 'required',
+            'status' => 'required',
+            'description' => 'required'
+        ])) {
+            return redirect()->back()->withInput();
+        }
 
-    public function destroy($id = null)
-    {
-        return "Destroy Profile";
+        $title = $this->request->getVar('title');
+
+        $this->profiles->save([
+            'post_id' => $id,
+            'post_type' => 'profil',
+            'date_modify' => date('Y-m-d H:i:s'),
+            'slug' => url_title($title, '-', true),
+            'title' => $title,
+            'date_publish' => $this->request->getVar('date_publish'),
+            'content' => $this->request->getVar('content'),
+            'status' => $this->request->getVar('status'),
+            'description' => $this->request->getVar('description')
+        ]);
+
+        return redirect()->back()->with('success', 'Tentang Aplikasi berhasil diubah!');
     }
 }

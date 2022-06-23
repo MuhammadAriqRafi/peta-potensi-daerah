@@ -8,6 +8,8 @@
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
+<?= $this->include('layout/flashMessageAlert'); ?>
+
 <form action="<?= route_to('backend.profiles.update', $profile['post_id']); ?>" method="POST" enctype="multipart/form-data">
     <?= csrf_field(); ?>
     <input type="hidden" name="_method" value="PATCH">
@@ -15,21 +17,17 @@
     <div class="mb-3">
         <label for="title" class="form-label fw-bold">Title</label>
         <input type="text" name="title" class="form-control <?= ($validation->hasError('title') ? 'is-invalid' : ''); ?>" value="<?= (old('title', $profile['title'])); ?>">
-        <?php if ($validation->hasError('title')) : ?>
-            <div class="invalid-feedback">
-                <?= $validation->getError('title'); ?>
-            </div>
-        <?php endif ?>
+        <div class="invalid-feedback">
+            <?= $validation->getError('title'); ?>
+        </div>
     </div>
     <!-- Date Publish Date Input -->
     <div class="mb-3">
         <label for="date_publish" class="form-label fw-bold">Date Publish</label>
-        <input type="date" name="date_publish" class="form-control <?= ($validation->hasError('date_publish') ? 'is-invalid' : ''); ?>" value="<?= (old('date_publish', $profile['date_publish'])); ?>" min="1900-01-01" max="<?= date("Y-12-31"); ?>">
-        <?php if ($validation->hasError('date_publish')) : ?>
-            <div class="invalid-feedback">
-                <?= $validation->getError('date_publish'); ?>
-            </div>
-        <?php endif ?>
+        <input type="date" name="date_publish" class="form-control <?= ($validation->hasError('date_publish') ? 'is-invalid' : ''); ?>" value="<?= (old('date_publish', date('Y-m-d', strtotime($profile['date_publish'])))); ?>" min="1900-01-01" max="<?= date("Y-12-31"); ?>">
+        <div class="invalid-feedback">
+            <?= $validation->getError('date_publish'); ?>
+        </div>
     </div>
     <!-- Content Textarea -->
     <div class="mb-3">
@@ -58,16 +56,15 @@
     <div class="mb-3">
         <label for="description" class="form-label fw-bold">Description</label><br>
         <textarea class="form-control <?= ($validation->hasError('description') ? 'is-invalid' : ''); ?>" name="description" cols="30" rows="5"><?= old('description', $profile['description']); ?></textarea>
-        <?php if ($validation->hasError('description')) : ?>
-            <div class="invalid-feedback">
-                <?= $validation->getError('description'); ?>
-            </div>
-        <?php endif ?>
+        <div class="invalid-feedback">
+            <?= $validation->getError('description'); ?>
+        </div>
     </div>
 
     <button type="submit" class="btn btn-primary my-4">Ubah</button>
     <a href="<?= route_to('backend.profiles.index'); ?>" class="btn btn-danger">Batal</a>
 </form>
+
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>

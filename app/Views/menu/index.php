@@ -1,13 +1,7 @@
 <?= $this->extend('layout/template'); ?>
 
 <?= $this->section('content'); ?>
-<!-- Flash Data -->
-<?php if (session()->getFlashdata()) : ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <?= session()->getFlashdata('success'); ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-<?php endif ?>
+<?= $this->include('layout/flashMessageAlert'); ?>
 
 <table>
     <thead>
@@ -45,6 +39,7 @@
         <button type="submit" class="btn btn-primary">Ubah</button>
     </div>
 </form>
+
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>

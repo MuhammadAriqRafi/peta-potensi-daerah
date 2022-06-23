@@ -89,8 +89,8 @@ class MapController extends BaseController
             'status' => $this->request->getVar('status')
         ]);
 
-        return redirect()->back()->with('success', 'Map berhasil ditambahkan!');
+        return redirect()->route('backend.maps.index')->with('success', 'Map berhasil ditambahkan!');
     }
 
-    // TODO: Add destroy post method (consider putting it in new controller PostController, so map and about controller can call the same method)
+    // TODO: Build update functionality
 }

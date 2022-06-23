@@ -19,7 +19,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="title" class="form-label">Title</label>
-                        <input type="text" class="form-control <?= $validation->hasError('title') ? 'is-invalid' : ''; ?>" id="title" name="title" autofocus value="<?= old('title'); ?>">
+                        <input type="text" class="form-control <?= $validation->hasError('title') ? 'is-invalid' : ''; ?>" name="title" autofocus value="<?= old('title'); ?>">
                         <div class="invalid-feedback">
                             <?= $validation->getError('title'); ?>
                         </div>
@@ -44,15 +44,10 @@
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
+
 <div class="row">
     <div class="col-8">
-        <!-- Flash Message -->
-        <?php if (session()->getFlashdata('success')) : ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?= session()->getFlashdata('success'); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif ?>
+        <?= $this->include('layout/flashMessageAlert'); ?>
 
         <table class="table table-striped table-dark">
             <thead>
@@ -86,6 +81,7 @@
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam neque similique et rem dolorum sint repellat, aut eum eveniet non?</p>
     </div>
 </div>
+
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>

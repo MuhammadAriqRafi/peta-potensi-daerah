@@ -47,6 +47,10 @@ $routes->group('backend', function ($routes) {
     // Administrator Routes
     $routes->group('administrators', function ($routes) {
         $routes->get('/', 'AdministratorController::index', ['as' => 'backend.administrators.index']);
+        $routes->post('/', 'AdministratorController::store', ['as' => 'backend.administrators.store']);
+        $routes->get('(:any)/edit', 'AdministratorController::edit/$1', ['as' => 'backend.administrators.edit']);
+        $routes->patch('(:any)', 'AdministratorController::update/$1', ['as' => 'backend.administrators.update']);
+        $routes->delete('(:any)', 'AdministratorController::destroy/$1', ['as' => 'backend.administrators.delete']);
     });
 
     // Popup Routes
@@ -71,6 +75,9 @@ $routes->group('backend', function ($routes) {
         $routes->get('(:any)/edit', 'MenuController::edit/$1', ['as' => 'backend.menus.edit']);
         $routes->patch('(:any)', 'MenuController::update/$1', ['as' => 'backend.menus.update']);
     });
+
+    // Posts Routes
+    $routes->delete('posts/(:num)/(:any)', 'PostController::destroy/$1/$2', ['as' => 'backend.posts.delete']);
 
     // Map Settings Routes
     $routes->group('maps', function ($routes) {

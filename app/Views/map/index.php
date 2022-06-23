@@ -5,6 +5,8 @@
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
+<?= $this->include('layout/flashMessageAlert'); ?>
+
 <table class="table">
     <thead>
         <tr>
@@ -24,8 +26,17 @@
                 <td><?= $map['author']; ?></td>
                 <td><?= $map['date_publish']; ?></td>
                 <td><?= $map['status']; ?></td>
+                <td>
+                    <form action="<?= route_to('backend.posts.delete', $map['post_id'], $map['post_type']); ?>" method="POST">
+                        <?= csrf_field(); ?>
+                        <input type="hidden" name="_method" value="DELETE">
+                        <a href="#" class="btn btn-sm btn-outline-warning">Edit</a>
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah anda yakin?')">Delete</button>
+                    </form>
+                </td>
             </tr>
         <?php endforeach ?>
     </tbody>
 </table>
+
 <?= $this->endSection(); ?>

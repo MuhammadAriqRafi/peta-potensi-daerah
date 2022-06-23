@@ -1,6 +1,7 @@
 <?= $this->extend('layout/template'); ?>
 
 <?= $this->section('content'); ?>
+
 <table class="table">
     <tbody>
         <?php foreach ($settings as $setting) : ?>
@@ -14,4 +15,5 @@
         <?php endforeach ?>
     </tbody>
 </table>
+
 <?= $this->endSection(); ?>

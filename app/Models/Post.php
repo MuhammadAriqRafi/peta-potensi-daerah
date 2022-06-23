@@ -14,7 +14,7 @@ class Post extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['post_type', 'slug', 'title', 'date_publish', 'status', 'description', 'content', 'others', 'category_id', 'image', 'kecamatan'];
+    protected $allowedFields    = ['post_type', 'slug', 'title', 'date_publish', 'date_modify', 'status', 'description', 'content', 'others', 'category_id', 'image', 'kecamatan'];
 
     // Dates
     protected $useTimestamps = false;

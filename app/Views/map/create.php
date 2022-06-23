@@ -18,13 +18,7 @@
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
-<!-- Flash Message -->
-<?php if (session()->getFlashdata('success')) : ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <?= session()->getFlashdata('success'); ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-<?php endif ?>
+<?= $this->include('layout/flashMessageAlert'); ?>
 
 <form action="<?= route_to('backend.maps.store'); ?>" method="POST" enctype="multipart/form-data">
     <?= csrf_field(); ?>
@@ -32,21 +26,17 @@
     <div class="mb-3">
         <label for="title" class="form-label fw-bold">Title</label>
         <input type="text" name="title" class="form-control <?= ($validation->hasError('title') ? 'is-invalid' : ''); ?>" value="<?= (old('title')); ?>">
-        <?php if ($validation->hasError('title')) : ?>
-            <div class="invalid-feedback">
-                <?= $validation->getError('title'); ?>
-            </div>
-        <?php endif ?>
+        <div class="invalid-feedback">
+            <?= $validation->getError('title'); ?>
+        </div>
     </div>
     <!-- Date Publish Date Input -->
     <div class="mb-3 col-2">
         <label for="date_publish" class="form-label fw-bold">Date Publish</label>
         <input type="date" name="date_publish" class="form-control <?= ($validation->hasError('date_publish') ? 'is-invalid' : ''); ?>" value="<?= (old('date_publish', date("Y-m-d"))); ?>" min="1900-01-01" max="<?= date("Y-12-31"); ?>">
-        <?php if ($validation->hasError('date_publish')) : ?>
-            <div class="invalid-feedback">
-                <?= $validation->getError('date_publish'); ?>
-            </div>
-        <?php endif ?>
+        <div class="invalid-feedback">
+            <?= $validation->getError('date_publish'); ?>
+        </div>
     </div>
     <!-- Kategori Dropdown -->
     <div class="mb-3">
@@ -57,11 +47,9 @@
                 <option value="<?= base64_encode($category['category_id']); ?>" <?= old('category') == base64_encode($category['category_id']) ? 'selected' : ''; ?>><?= $category['title']; ?></option>
             <?php endforeach ?>
         </select>
-        <?php if ($validation->hasError('category')) : ?>
-            <div class="invalid-feedback">
-                <?= $validation->getError('category'); ?>
-            </div>
-        <?php endif ?>
+        <div class="invalid-feedback">
+            <?= $validation->getError('category'); ?>
+        </div>
     </div>
     <!-- Kecamatan Dropdown -->
     <div class="mb-3">
@@ -70,11 +58,9 @@
             <!-- Data is fetced using ajax request to ibnux github repo -->
             <option value="" hidden>Pilih Kecamatan</option>
         </select>
-        <?php if ($validation->hasError('kecamatan')) : ?>
-            <div class="invalid-feedback">
-                <?= $validation->getError('kecamatan'); ?>
-            </div>
-        <?php endif ?>
+        <div class="invalid-feedback">
+            <?= $validation->getError('kecamatan'); ?>
+        </div>
     </div>
     <!-- Map Location -->
     <div id="map" class="mb-3"></div>
@@ -82,30 +68,24 @@
     <div class="mb-3">
         <label for="latitude" class="form-label fw-bold">Latitude</label>
         <input type="text" name="latitude" id="latitude" class="form-control <?= ($validation->hasError('latitude') ? 'is-invalid' : ''); ?>" value="<?= (old('latitude')); ?>">
-        <?php if ($validation->hasError('latitude')) : ?>
-            <div class="invalid-feedback">
-                <?= $validation->getError('latitude'); ?>
-            </div>
-        <?php endif ?>
+        <div class="invalid-feedback">
+            <?= $validation->getError('latitude'); ?>
+        </div>
     </div>
     <!-- Longitude Input -->
     <div class="mb-3">
         <label for="longitude" class="form-label fw-bold">Longitude</label>
         <input type="text" name="longitude" id="longitude" class="form-control <?= ($validation->hasError('longitude') ? 'is-invalid' : ''); ?>" value="<?= (old('longitude')); ?>">
-        <?php if ($validation->hasError('longitude')) : ?>
-            <div class="invalid-feedback">
-                <?= $validation->getError('longitude'); ?>
-            </div>
-        <?php endif ?>
+        <div class="invalid-feedback">
+            <?= $validation->getError('longitude'); ?>
+        </div>
     </div>
     <!-- Deskripsi Textarea -->
     <div class="mb-3">
         <label for="description" class="form-label fw-bold">Deskripsi</label>
         <textarea id="summernote" name="description"><?= old('description'); ?></textarea>
         <?php if ($validation->hasError('description')) : ?>
-            <div class="invalid-feedback">
-                <?= $validation->getError('description'); ?>
-            </div>
+            <p class="text-danger"><?= $validation->getError('description'); ?></p>
         <?php endif ?>
     </div>
     <!-- Status Radio Input -->
@@ -125,7 +105,7 @@
     <div class="mb-3">
         <label for="cover" class="form-label fw-bold">Cover</label><br>
         <img src="#" height="100" class="img-thumbnail mb-3 img-preview">
-        <input class="form-control <?= $validation->hasError('cover') ? 'is-invalid' : ''; ?>" type="file" name="cover" onchange="previewImg()">
+        <input class="form-control <?= $validation->hasError('cover') ? 'is-invalid' : ''; ?>" type="file" id="cover" name="cover" onchange="previewImg()">
         <div class="invalid-feedback">
             <?= $validation->getError('cover'); ?>
         </div>
@@ -144,16 +124,15 @@
     <div class="mb-3">
         <label for="address" class="form-label fw-bold">Address</label><br>
         <textarea class="form-control <?= ($validation->hasError('address') ? 'is-invalid' : ''); ?>" name="address" cols="30" rows="10"><?= old('address'); ?></textarea>
-        <?php if ($validation->hasError('address')) : ?>
-            <div class="invalid-feedback">
-                <?= $validation->getError('address'); ?>
-            </div>
-        <?php endif ?>
+        <div class="invalid-feedback">
+            <?= $validation->getError('address'); ?>
+        </div>
     </div>
 
-    <button type="submit" class="btn btn-primary my-4">Ubah</button>
-    <a href="<?= route_to('backend.popups.index'); ?>" class="btn btn-danger my-4">Cancel</a>
+    <button type="submit" class="btn btn-primary my-4">Tambah</button>
+    <a href="<?= route_to('backend.maps.index'); ?>" class="btn btn-danger my-4">Cancel</a>
 </form>
+
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>
@@ -211,7 +190,7 @@
     });
 
     function previewImg() {
-        const image = document.querySelector('#image');
+        const image = document.querySelector('#cover');
         const imgPreview = document.querySelector('.img-preview');
         const fileImage = new FileReader();
 

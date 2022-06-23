@@ -90,13 +90,7 @@
 
 
 <?= $this->section('content'); ?>
-<!-- Flash Message -->
-<?php if (session()->getFlashdata('success')) : ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <?= session()->getFlashdata('success'); ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-<?php endif ?>
+<?= $this->include('layout/flashMessageAlert'); ?>
 
 <table class="table">
     <thead>
@@ -116,17 +110,18 @@
                 <td><?= $profile['date_publish']; ?></td>
                 <td><?= $profile['status']; ?></td>
                 <td>
-                    <form action="<?= route_to('backend.profile.delete', $profile['post_id']); ?>">
+                    <form action="<?= route_to('backend.posts.delete', $profile['post_id'], $profile['post_type']); ?> " method="POST">
                         <?= csrf_field(); ?>
                         <input type="hidden" name="_method" value="DELETE">
                         <a href="<?= route_to('backend.profiles.edit', base64_encode($profile['post_id'])); ?>" class="btn btn-sm btn-outline-warning">Edit</a>
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah anda yakin?')">Delete</button>
                     </form>
                 </td>
             </tr>
         <?php endforeach ?>
     </tbody>
 </table>
+
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>
