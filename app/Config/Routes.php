@@ -2,6 +2,8 @@
 
 namespace Config;
 
+use App\Controllers\CategoryController;
+
 // Create a new instance of our RouteCollection class.
 $routes = Services::routes();
 
@@ -17,7 +19,7 @@ if (is_file(SYSTEMPATH . 'Config/Routes.php')) {
  * --------------------------------------------------------------------
  */
 $routes->setDefaultNamespace('App\Controllers');
-$routes->setDefaultController('Home');
+$routes->setDefaultController('PageController');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 $routes->set404Override();
@@ -83,9 +85,19 @@ $routes->group('backend', function ($routes) {
 
     // Map Settings Routes
     $routes->group('maps', function ($routes) {
+        // Category Routes
+        $routes->group('categories', function ($routes) {
+            $routes->get('/', 'CategoryController::index', ['as' => 'backend.maps.categories.index']);
+            $routes->post('/', 'CategoryController::store', ['as' => 'backend.maps.categories.store']);
+            $routes->get('(:any)/edit', 'CategoryController::edit/$1', ['as' => 'backend.maps.categories.edit']);
+            $routes->patch('(:any)', 'CategoryController::update/$1', ['as' => 'backend.maps.categories.update']);
+            $routes->delete('(:any)', 'CategoryController::destroy/$1', ['as' => 'backend.maps.categories.destroy']);
+        });
+
         $routes->get('/', 'MapController::index', ['as' => 'backend.maps.index']);
         $routes->post('/', 'MapController::store', ['as' => 'backend.maps.store']);
         $routes->get('create', 'MapController::create', ['as' => 'backend.maps.create']);
+        $routes->get('(:any)/edit', 'MapController::edit/$1', ['as' => 'backend.maps.edit']);
         $routes->patch('(:any)', 'MapController::update/$1', ['as' => 'backend.maps.update']);
         $routes->delete('(:any)', 'MapController::destroy/$1', ['as' => 'backend.maps.delete']);
     });

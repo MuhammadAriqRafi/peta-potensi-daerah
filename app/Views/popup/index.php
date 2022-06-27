@@ -18,7 +18,7 @@
                 <?= csrf_field(); ?>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="title" class="form-label">Title</label>
+                        <label for="title" class="form-label">Judul</label>
                         <input type="text" class="form-control <?= $validation->hasError('title') ? 'is-invalid' : ''; ?>" name="title" autofocus value="<?= old('title'); ?>">
                         <div class="invalid-feedback">
                             <?= $validation->getError('title'); ?>
@@ -78,7 +78,22 @@
         </table>
     </div>
     <div class="col-4">
+        <img src="<?= base_url('img/' . $popups[3]['value']); ?>" alt="" width="100%">
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam neque similique et rem dolorum sint repellat, aut eum eveniet non?</p>
+        <form action="#" method="POST">
+            <!-- Active Pop Up Dropdown -->
+            <div class="mb-3">
+                <label for="status" class="form-label fw-bold">Pop Up Active</label>
+                <select name="status" class="form-select <?= $validation->hasError('status') ? 'is-invalid' : ''; ?>">
+                    <?php foreach ($popups as $popup) : ?>
+                        <option value="<?= base64_encode($popup['status']); ?>" <?= old('status') == base64_encode($popup['status']) ? 'selected' : ''; ?>><?= $popup['title']; ?></option>
+                    <?php endforeach ?>
+                </select>
+                <div class="invalid-feedback">
+                    <?= $validation->getError('status'); ?>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 

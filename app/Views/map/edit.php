@@ -20,12 +20,15 @@
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
 
-<form action="<?= route_to('backend.maps.store'); ?>" method="POST" enctype="multipart/form-data">
+<form action="<?= route_to('backend.maps.update', $map['post_id']); ?>" method="POST" enctype="multipart/form-data">
     <?= csrf_field(); ?>
+    <input type="hidden" name="_method" value="PATCH">
+    <input type="hidden" name="oldImage" value="<?= $map['image']; ?>">
+
     <!-- Title Input -->
     <div class="mb-3">
         <label for="title" class="form-label fw-bold">Title</label>
-        <input type="text" name="title" class="form-control <?= ($validation->hasError('title') ? 'is-invalid' : ''); ?>" value="<?= (old('title')); ?>">
+        <input type="text" name="title" class="form-control <?= ($validation->hasError('title') ? 'is-invalid' : ''); ?>" value="<?= (old('title', $map['title'])); ?>">
         <div class="invalid-feedback">
             <?= $validation->getError('title'); ?>
         </div>
@@ -33,7 +36,7 @@
     <!-- Date Publish Date Input -->
     <div class="mb-3 col-2">
         <label for="date_publish" class="form-label fw-bold">Date Publish</label>
-        <input type="date" name="date_publish" class="form-control <?= ($validation->hasError('date_publish') ? 'is-invalid' : ''); ?>" value="<?= (old('date_publish', date("Y-m-d"))); ?>" min="1900-01-01" max="<?= date("Y-12-31"); ?>">
+        <input type="date" name="date_publish" class="form-control <?= ($validation->hasError('date_publish') ? 'is-invalid' : ''); ?>" value="<?= (old('date_publish', date("Y-m-d", strtotime($map['date_publish'])))); ?>" min="1900-01-01" max="<?= date("Y-12-31"); ?>">
         <div class="invalid-feedback">
             <?= $validation->getError('date_publish'); ?>
         </div>
@@ -44,7 +47,7 @@
         <select name="category" class="form-select <?= $validation->hasError('category') ? 'is-invalid' : ''; ?>">
             <option value="" hidden>Pilih Kategori</option>
             <?php foreach ($categories as $category) : ?>
-                <option value="<?= base64_encode($category['category_id']); ?>" <?= old('category') == base64_encode($category['category_id']) ? 'selected' : ''; ?>><?= $category['title']; ?></option>
+                <option value="<?= base64_encode($category['category_id']); ?>" <?= old('category', base64_encode($map['category_id'])) == base64_encode($category['category_id']) ? 'selected' : ''; ?>><?= $category['title']; ?></option>
             <?php endforeach ?>
         </select>
         <div class="invalid-feedback">
@@ -67,7 +70,7 @@
     <!-- Latitude Input -->
     <div class="mb-3">
         <label for="latitude" class="form-label fw-bold">Latitude</label>
-        <input type="text" name="latitude" id="latitude" class="form-control <?= ($validation->hasError('latitude') ? 'is-invalid' : ''); ?>" value="<?= (old('latitude')); ?>">
+        <input type="text" name="latitude" id="latitude" class="form-control <?= ($validation->hasError('latitude') ? 'is-invalid' : ''); ?>" value="<?= (old('latitude', $others['latitude'])); ?>">
         <div class="invalid-feedback">
             <?= $validation->getError('latitude'); ?>
         </div>
@@ -75,7 +78,7 @@
     <!-- Longitude Input -->
     <div class="mb-3">
         <label for="longitude" class="form-label fw-bold">Longitude</label>
-        <input type="text" name="longitude" id="longitude" class="form-control <?= ($validation->hasError('longitude') ? 'is-invalid' : ''); ?>" value="<?= (old('longitude')); ?>">
+        <input type="text" name="longitude" id="longitude" class="form-control <?= ($validation->hasError('longitude') ? 'is-invalid' : ''); ?>" value="<?= (old('longitude', $others['longitude'])); ?>">
         <div class="invalid-feedback">
             <?= $validation->getError('longitude'); ?>
         </div>
@@ -83,7 +86,7 @@
     <!-- Deskripsi Textarea -->
     <div class="mb-3">
         <label for="description" class="form-label fw-bold">Deskripsi</label>
-        <textarea id="summernote" name="description"><?= old('description'); ?></textarea>
+        <textarea id="summernote" name="description"><?= old('description', $others['description']); ?></textarea>
         <?php if ($validation->hasError('description')) : ?>
             <p class="text-danger"><?= $validation->getError('description'); ?></p>
         <?php endif ?>
@@ -93,7 +96,7 @@
         <label for="status" class="form-label fw-bold">Status</label><br>
         <?php foreach ($statuses as $status) : ?>
             <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="status" value="<?= $status; ?>" <?= old('status') == $status ? 'checked' : ''; ?>>
+                <input class="form-check-input" type="radio" name="status" value="<?= $status; ?>" <?= old('status', $map['status']) == $status ? 'checked' : ''; ?>>
                 <label class="form-check-label" for="<?= $status; ?>"><?= ucfirst($status); ?></label>
             </div>
         <?php endforeach ?>
@@ -104,7 +107,8 @@
     <!-- Cover File Input -->
     <div class="mb-3">
         <label for="cover" class="form-label fw-bold">Cover</label><br>
-        <img src="#" height="100" class="img-thumbnail mb-3 img-preview">
+        <!-- TODO: Attach the image -->
+        <img src="<?= $map['image'] ? base_url('img/' . $map['image']) : '#'; ?>" height="100" class="img-thumbnail mb-3 img-preview">
         <input class="form-control <?= $validation->hasError('cover') ? 'is-invalid' : ''; ?>" type="file" id="cover" name="cover" onchange="previewImg()">
         <div class="invalid-feedback">
             <?= $validation->getError('cover'); ?>
@@ -113,23 +117,19 @@
     <!-- Video Input -->
     <div class="mb-3">
         <label for="youtube" class="form-label fw-bold">Video</label>
-        <input type="text" name="youtube" class="form-control <?= ($validation->hasError('youtube') ? 'is-invalid' : ''); ?>" value="<?= (old('youtube')); ?>">
-        <?php if ($validation->hasError('youtube')) : ?>
-            <div class="invalid-feedback">
-                <?= $validation->getError('youtube'); ?>
-            </div>
-        <?php endif ?>
+        <input type="text" name="youtube" class="form-control" value="<?= old('youtube', isset($others['youtube'])) ?? ' '; ?>">
     </div>
     <!-- Address Textarea -->
     <div class="mb-3">
         <label for="address" class="form-label fw-bold">Address</label><br>
-        <textarea class="form-control <?= ($validation->hasError('address') ? 'is-invalid' : ''); ?>" name="address" cols="30" rows="10"><?= old('address'); ?></textarea>
+        <textarea class="form-control <?= ($validation->hasError('address') ? 'is-invalid' : ''); ?>" name="address" cols="30" rows="10"><?= old('address', $others['address']); ?></textarea>
         <div class="invalid-feedback">
             <?= $validation->getError('address'); ?>
         </div>
     </div>
 
-    <button type="submit" class="btn btn-primary my-4">Tambah</button>
+    <!-- // TODO: Attach appropriate value to each input -->
+    <button type="submit" class="btn btn-primary my-4">Ubah</button>
     <a href="<?= route_to('backend.maps.index'); ?>" class="btn btn-danger my-4">Cancel</a>
 </form>
 
@@ -148,6 +148,9 @@
                 let option = document.createElement("option");
                 option.text = kecamatan.nama;
                 option.value = kecamatan.nama;
+                if (kecamatan.nama == <?= json_encode($map['kecamatan']); ?>) {
+                    option.selected = true;
+                }
                 kecamatanSelect.add(option);
             });
         })
@@ -157,8 +160,8 @@
 
     <?php
 
-    $latitude = json_encode(old('latitude', -5.2749));
-    $longitude = json_encode(old('longitude', 105.6882));
+    $latitude = json_encode(old('latitude', $others['latitude']));
+    $longitude = json_encode(old('longitude', $others['longitude']));
 
     ?>
 

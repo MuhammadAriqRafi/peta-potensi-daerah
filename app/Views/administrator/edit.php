@@ -3,7 +3,7 @@
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
 
-<form action="<?= route_to('backend.administrators.update', $administrator['admin_id']) ?>" method="POST">
+<form action="<?= route_to('backend.administrators.update', $administrator['admin_id']) ?>" method="POST" class="pb-4">
     <?= csrf_field(); ?>
     <input type="hidden" name="_method" value="PATCH">
     <div class="mb-3">

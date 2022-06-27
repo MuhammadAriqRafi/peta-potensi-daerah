@@ -42,7 +42,7 @@ class AdministratorController extends BaseController
             'nik' => $this->request->getVar('nik'),
             'nama' => $this->request->getVar('nama'),
             'username' => $this->request->getVar('username'),
-            'password' => password_hash($this->request->getVar('password'), PASSWORD_BCRYPT)
+            'password' => $this->request->getVar('password')
         ]);
 
         return redirect()->back()->with('success', 'Administrator berhasil ditambahkan!');
@@ -76,7 +76,7 @@ class AdministratorController extends BaseController
             'nik' => $this->request->getVar('nik'),
             'nama' => $this->request->getVar('nama'),
             'username' => $this->request->getVar('username'),
-            'password' => password_hash($this->request->getVar('password'), PASSWORD_BCRYPT)
+            'password' => $this->request->getVar('password')
         ]);
 
         return redirect()->back()->with('success', 'Administrator berhasil diubah!');

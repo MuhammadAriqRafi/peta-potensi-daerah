@@ -23,6 +23,17 @@ class Administrator extends Model
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
+    // Callbacks
+    protected $allowCallbacks = true;
+    protected $beforeInsert   = ['hashPassword'];
+    protected $beforeUpdate   = ['hashPassword'];
+
+    protected function hashPassword(array $data)
+    {
+        $data['data']['password'] = password_hash($data['data']['password'], PASSWORD_DEFAULT);
+        return $data;
+    }
+
     public function getAdmins()
     {
         return $this->db->table('administrators')

@@ -22,16 +22,13 @@ class PageController extends BaseController
 
     public function index()
     {
-        $categories = $this->categories->findAll();
-        $menus = $this->menu->findAll();
-
         $data = [
             'title' => 'Peta Potensi Daerah Lampung Timur',
-            'categories' => $categories,
-            'menus' => $menus
+            'categories' => $this->categories->findAll(),
+            'menus' => $this->menus->findAll()
         ];
 
-        return view('index', $data);
+        return view('pages/index', $data);
     }
 
     public function backend_dashboard()
@@ -46,6 +43,6 @@ class PageController extends BaseController
             ]
         ];
 
-        return view('index', $data);
+        return view('pages/dashboard', $data);
     }
 }

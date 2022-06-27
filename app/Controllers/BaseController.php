@@ -35,7 +35,7 @@ abstract class BaseController extends Controller
      *
      * @var array
      */
-    protected $helpers = ['file_upload'];
+    protected $helpers = ['file_upload', 'session_management'];
 
     /**
      * Constructor.
@@ -46,6 +46,7 @@ abstract class BaseController extends Controller
         parent::initController($request, $response, $logger);
 
         // Preload any models, libraries, etc, here.
+        date_default_timezone_set('Asia/Jakarta');
         session();
 
         // E.g.: $this->session = \Config\Services::session();

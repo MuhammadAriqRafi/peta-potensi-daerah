@@ -14,7 +14,7 @@ class Visitor extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = [];
+    protected $allowedFields    = ['session_id', 'ip', 'user_agent'];
 
     // Dates
     protected $useTimestamps = false;
@@ -23,7 +23,6 @@ class Visitor extends Model
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
-    // 2018-09-07 12:01:58
     public function countVisitorInAWeek()
     {
         return $this->db->table('visitors')
@@ -41,10 +40,20 @@ class Visitor extends Model
 
     public function countDailyVisitor()
     {
+        $today = date("Y-m-d", strtotime('today'));
+
         return $this->db->table('visitors')
-            ->where('YEAR(date_time)', date('Y'))
-            ->where('MONTH(date_time)', date('m'))
-            ->where('DAY(date_time)', date('d'))
+            ->where('DATE(date_time)', $today)
             ->countAllResults();
+    }
+
+    public function hasSessionId($session_id): bool
+    {
+        $visitor = $this->db->table('visitors')
+            ->where('session_id', $session_id)
+            ->countAllResults();
+
+        if ($visitor < 1) return true;
+        return false;
     }
 }
