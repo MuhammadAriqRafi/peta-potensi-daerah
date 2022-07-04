@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\Category;
 use App\Models\Menu;
 use App\Models\Visitor;
+use Config\Services;
 
 class PageController extends BaseController
 {
@@ -25,7 +26,8 @@ class PageController extends BaseController
         $data = [
             'title' => 'Peta Potensi Daerah Lampung Timur',
             'categories' => $this->categories->findAll(),
-            'menus' => $this->menus->findAll()
+            'menus' => $this->menus->findAll(),
+            'validation' => Services::validation()
         ];
 
         return view('pages/index', $data);

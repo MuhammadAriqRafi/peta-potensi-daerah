@@ -1,14 +1,21 @@
 <?= $this->extend('layout/template'); ?>
 
+<?= $this->section('css'); ?>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css">
+<?= $this->endSection(); ?>
+
+
 <?= $this->section('toolbar'); ?>
-<a href="<?= route_to('backend.maps.create'); ?>" class="btn btn-sm btn-outline-primary">Tambah Data</a>
-<a href="<?= route_to('backend.maps.categories.index'); ?>" class="btn btn-sm btn-outline-primary">Category</a>
+<div class="btn-group">
+    <a href="<?= route_to('backend.maps.create'); ?>" class="btn btn-sm btn-outline-primary">Tambah Data</a>
+    <a href="<?= route_to('backend.maps.categories.index'); ?>" class="btn btn-sm btn-outline-primary">Category</a>
+</div>
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
 
-<table class="table">
+<table class="table" id="mapTable">
     <thead>
         <tr>
             <th>Title</th>
@@ -40,4 +47,20 @@
     </tbody>
 </table>
 
+<?= $this->endSection(); ?>
+
+<?= $this->section('script'); ?>
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#mapTable').DataTable({
+            lengthMenu: [
+                [10, 25, 50, -1],
+                [10, 25, 50, 'All'],
+            ]
+        });
+    });
+</script>
 <?= $this->endSection(); ?>

@@ -17,6 +17,10 @@
 <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
 <?= $this->endSection(); ?>
 
+<?= $this->section('toolbar'); ?>
+<a href="<?= route_to('backend.maps.galleries.index', base64_encode($map['post_id'])); ?>" class="btn btn-sm btn-outline-primary">Galeri Foto</a>
+<?= $this->endSection(); ?>
+
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
 

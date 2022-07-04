@@ -49,7 +49,7 @@
     <div class="col-8">
         <?= $this->include('layout/flashMessageAlert'); ?>
 
-        <table class="table table-striped table-dark">
+        <table class="table table-striped">
             <thead>
                 <tr>
                     <th scope="col">No</th>
@@ -63,7 +63,7 @@
                 <?php foreach ($popups as $popup) : ?>
                     <tr>
                         <th scope="row"><?= $i++; ?></th>
-                        <td><?= $popup['title']; ?></td>
+                        <td><?= $popup['title']; ?></a></td>
                         <td><?= $popup['value'] ?? '-'; ?></td>
                         <td>
                             <form action="<?= route_to('backend.popups.delete', $popup['popup_id']); ?>" method="POST">
@@ -77,22 +77,27 @@
             </tbody>
         </table>
     </div>
+
     <div class="col-4">
-        <img src="<?= base_url('img/' . $popups[3]['value']); ?>" alt="" width="100%">
-        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam neque similique et rem dolorum sint repellat, aut eum eveniet non?</p>
-        <form action="#" method="POST">
+        <img src="<?= base_url('img/' . $currentActivePopup['value']); ?>" alt="" width="100%">
+        <form action="<?= route_to('backend.popups.statuses.update'); ?>" method="POST">
+            <?= csrf_field(); ?>
+            <input type="hidden" name="_method" value="PATCH">
+            <input type="hidden" name="oldActivePopup" value="<?= base64_encode($currentActivePopup['popup_id']); ?>">
             <!-- Active Pop Up Dropdown -->
             <div class="mb-3">
                 <label for="status" class="form-label fw-bold">Pop Up Active</label>
                 <select name="status" class="form-select <?= $validation->hasError('status') ? 'is-invalid' : ''; ?>">
                     <?php foreach ($popups as $popup) : ?>
-                        <option value="<?= base64_encode($popup['status']); ?>" <?= old('status') == base64_encode($popup['status']) ? 'selected' : ''; ?>><?= $popup['title']; ?></option>
+                        <option value="<?= base64_encode($popup['popup_id']); ?>" <?= old('status', $currentActivePopup['popup_id']) == $popup['popup_id'] ? 'selected' : ''; ?>><?= $popup['title']; ?></option>
                     <?php endforeach ?>
                 </select>
                 <div class="invalid-feedback">
                     <?= $validation->getError('status'); ?>
                 </div>
             </div>
+
+            <button type="submit" class="btn btn-sm btn-outline-primary">Ubah</button>
         </form>
     </div>
 </div>

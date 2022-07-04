@@ -53,7 +53,7 @@ class Visitor extends Model
             ->where('session_id', $session_id)
             ->countAllResults();
 
-        if ($visitor < 1) return true;
+        if ($visitor > 0) return true;
         return false;
     }
 }

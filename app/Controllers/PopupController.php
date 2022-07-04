@@ -20,7 +20,8 @@ class PopupController extends BaseController
         $data = [
             'title' => 'Pop Up Manager',
             'popups' => $this->popup->findAll(),
-            'validation' => Services::validation()
+            'validation' => Services::validation(),
+            'currentActivePopup' => $this->popup->where('status', 'active')->first()
         ];
 
         return view('popup/index', $data);
@@ -106,9 +107,24 @@ class PopupController extends BaseController
         return redirect()->back()->with('success', 'Pop Up berhasil dihapus!');
     }
 
-    // TODO: Build update status functionality for popup
-    public function update_status($id)
+    public function update_status()
     {
-        # code...
+        if (!$this->validate([
+            'status' => 'required'
+        ])) {
+            return redirect()->back()->withInput();
+        }
+
+        $this->popup->save([
+            'popup_id' => base64_decode($this->request->getVar('status')),
+            'status' => 'active'
+        ]);
+
+        $this->popup->save([
+            'popup_id' => base64_decode($this->request->getVar('oldActivePopup')),
+            'status' => 'non_active'
+        ]);
+
+        return redirect()->back()->with('success', 'Berhasil update pop up active!');
     }
 }

@@ -68,7 +68,6 @@ class CategoryController extends BaseController
         return view('category/edit', $data);
     }
 
-    // TODO: Build update and destroy functionality
     public function update($id = null)
     {
         if (!$this->validate([

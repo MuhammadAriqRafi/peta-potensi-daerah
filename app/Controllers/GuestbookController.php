@@ -2,77 +2,65 @@
 
 namespace App\Controllers;
 
-use CodeIgniter\RESTful\ResourceController;
+use App\Controllers\BaseController;
+use App\Models\Guestbook;
 
-class GuestbookController extends ResourceController
+class GuestbookController extends BaseController
 {
-    /**
-     * Return an array of resource objects, themselves in array format
-     *
-     * @return mixed
-     */
+    protected $guestbooks;
+
+    public function __construct()
+    {
+        $this->guestbooks = new Guestbook();
+    }
+
     public function index()
     {
-        //
+        $data = [
+            'title' => 'Guestbook',
+            'guestbooks' => $this->guestbooks->findAll(),
+        ];
+
+        return view('guestbook/index', $data);
     }
 
-    /**
-     * Return the properties of a resource object
-     *
-     * @return mixed
-     */
     public function show($id = null)
     {
-        //
+        $guestbook = $this->guestbooks->find(base64_decode($id));
+
+        $data = [
+            'title' => $guestbook['title'],
+            'guestbook' => $guestbook
+        ];
+
+        // TODO: Add helper in the template to set status to read
+        return view('guestbook/detail', $data);
     }
 
-    /**
-     * Return a new resource object, with default properties
-     *
-     * @return mixed
-     */
-    public function new()
+    public function store()
     {
-        //
+        if (!$this->validate([
+            'name' =>  'required',
+            'email' => 'required|valid_email',
+            'title' => 'required',
+            'messages' => 'required'
+        ])) {
+            return redirect()->back()->withInput();
+        }
+
+        $this->guestbooks->save([
+            'name' => $this->request->getVar('name'),
+            'email' => $this->request->getVar('email'),
+            'title' => $this->request->getVar('title'),
+            'messages' => $this->request->getVar('messages')
+        ]);
+
+        return redirect()->back()->with('success', 'Pesan berhasil terkirim!');
     }
 
-    /**
-     * Create a new resource object, from "posted" parameters
-     *
-     * @return mixed
-     */
-    public function create()
+    public function destroy($id = null)
     {
-        //
-    }
-
-    /**
-     * Return the editable properties of a resource object
-     *
-     * @return mixed
-     */
-    public function edit($id = null)
-    {
-        //
-    }
-
-    /**
-     * Add or update a model resource, from "posted" properties
-     *
-     * @return mixed
-     */
-    public function update($id = null)
-    {
-        //
-    }
-
-    /**
-     * Delete the designated resource object from the model
-     *
-     * @return mixed
-     */
-    public function delete($id = null)
-    {
-        //
+        $this->guestbooks->delete($id);
+        return redirect()->back()->with('success', 'Pesan berhasil dihapus!');
     }
 }
