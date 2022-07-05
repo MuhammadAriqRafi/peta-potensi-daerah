@@ -4,7 +4,6 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css">
 <?= $this->endSection(); ?>
 
-
 <?= $this->section('toolbar'); ?>
 <div class="btn-group">
     <a href="<?= route_to('backend.maps.create'); ?>" class="btn btn-sm btn-outline-primary">Tambah Data</a>
@@ -14,7 +13,6 @@
 
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
-
 <table class="table" id="mapTable">
     <thead>
         <tr>
@@ -46,7 +44,6 @@
         <?php endforeach ?>
     </tbody>
 </table>
-
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>

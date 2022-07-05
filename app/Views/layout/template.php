@@ -25,6 +25,15 @@
         }
     </style>
 
+    <?php
+    helper('guestbook');
+    $uri = service('uri');
+
+    if ($uri->getSegment(2) === 'guestbooks' && $uri->getTotalSegments() === 3) {
+        setStatusRead($guestbook['guestbook_id']);
+    }
+    ?>
+
     <!-- Custom styles for this template -->
     <link href="dashboard.css" rel="stylesheet">
 
@@ -40,7 +49,6 @@
         <!-- <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search"> -->
         <div class="navbar-nav">
             <div class="nav-item text-nowrap d-flex">
-                <?php helper('guestbook') ?>
                 <a class="nav-link px-3" href="<?= route_to('backend.guestbooks.index'); ?>"><span class="text-warning"><?= countUnreadMessages() ?></span> Guestbook</a>
                 <a class="nav-link px-3" href="<?= route_to('logout'); ?>">Logout</a>
             </div>

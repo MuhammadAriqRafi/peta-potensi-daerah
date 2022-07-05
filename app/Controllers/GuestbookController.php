@@ -33,7 +33,6 @@ class GuestbookController extends BaseController
             'guestbook' => $guestbook
         ];
 
-        // TODO: Add helper in the template to set status to read
         return view('guestbook/detail', $data);
     }
 
