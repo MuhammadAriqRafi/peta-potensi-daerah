@@ -1,9 +1,5 @@
 <?= $this->extend('layout/template'); ?>
 
-<?= $this->section('css'); ?>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css">
-<?= $this->endSection(); ?>
-
 <?= $this->section('toolbar'); ?>
 <div class="btn-group">
     <a href="<?= route_to('backend.maps.create'); ?>" class="btn btn-sm btn-outline-primary">Tambah Data</a>
@@ -25,38 +21,48 @@
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($maps as $map) : ?>
-            <tr>
-                <td><?= $map['title']; ?></td>
-                <td><?= $map['category']; ?></td>
-                <td><?= $map['author']; ?></td>
-                <td><?= $map['date_publish']; ?></td>
-                <td><?= $map['status']; ?></td>
-                <td>
-                    <form action="<?= route_to('backend.posts.delete', $map['post_id'], $map['post_type']); ?>" method="POST">
-                        <?= csrf_field(); ?>
-                        <input type="hidden" name="_method" value="DELETE">
-                        <a href="<?= route_to('backend.maps.edit', base64_encode($map['post_id'])); ?>" class="btn btn-sm btn-outline-warning">Edit</a>
-                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah anda yakin?')">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        <?php endforeach ?>
     </tbody>
 </table>
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>
-<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-<script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+<script src="<?= base_url('js/ajaxUtilities.js'); ?>"></script>
 <script>
+    const store = () => {
+
+    }
+
+    const destroy = (id, context = '') => {
+        if (confirm('Apakah anda yakin?')) {
+            let url = urlFormatter(`<?= site_url(route_to('backend.posts.delete', ':id', ':context')); ?>`, id, context);
+
+            $.ajax({
+                type: "DELETE",
+                url: url,
+                dataType: "json",
+                success: function(response) {
+                    if (response.status == 1) alert(response.message);
+                },
+                complete: function() {
+                    // TODO: Consider not reloading the data, instead delete particular row in datatables
+                    reload();
+                }
+            });
+        }
+    }
+
+    const update = (id) => {}
+
     $(document).ready(function() {
-        $('#mapTable').DataTable({
+        let table = $('#mapTable').DataTable({
+            pageLength: 10,
             lengthMenu: [
-                [10, 25, 50, -1],
+                [10, 25, 50, 99999],
                 [10, 25, 50, 'All'],
-            ]
+            ],
+            ajax: '<?= site_url(route_to('backend.maps.index.ajax')); ?>',
+            serverSide: true,
+            deferRender: true
         });
     });
 </script>

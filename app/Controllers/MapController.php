@@ -2,12 +2,12 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Controllers\PostController;
 use App\Models\Category;
 use App\Models\Post;
 use Config\Services;
 
-class MapController extends BaseController
+class MapController extends PostController
 {
     protected $maps;
 
@@ -71,7 +71,7 @@ class MapController extends BaseController
 
         // ? Move and get the image name
         $image = $this->request->getFile('cover');
-        if ($image->getError() != 4) $imageName = storeAs($image, 'img', 'map');
+        if ($image->getError() != 4) $imageName = storeAs($image, 'img/', 'map');
         else $imageName = null;
 
         $this->maps->save([
@@ -91,6 +91,7 @@ class MapController extends BaseController
 
     public function edit($id = null)
     {
+        return $this->response->setJSON([$id]);
         $category = new Category();
         $map = $this->maps->find(base64_decode($id));
         $others = json_decode($map['others'], true);
@@ -159,5 +160,12 @@ class MapController extends BaseController
         ]);
 
         return redirect()->route('backend.maps.index')->with('success', 'Map berhasil diubah!');
+    }
+
+    // ? Ajax Methods
+    public function ajaxIndex()
+    {
+        $uri = service('uri');
+        return $this->ajaxGetDataDataTables($uri->getSegment(2), $this->maps);
     }
 }

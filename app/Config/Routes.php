@@ -89,6 +89,7 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
         $routes->get('/', 'SettingController::index', ['as' => 'backend.settings.index']);
         $routes->get('(:any)/edit', 'SettingController::edit/$1', ['as' => 'backend.settings.edit']);
         $routes->patch('(:num)', 'SettingController::update/$1', ['as' => 'backend.settings.update']);
+        $routes->patch('ajax/(:any)', 'SettingController::ajaxUpdate/$1', ['as' => 'backend.settings.update.ajax']);
     });
 
     // Menu Manager Routes
@@ -99,10 +100,11 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
     });
 
     // Posts Routes
-    $routes->delete('posts/(:num)/(:any)', 'PostController::destroy/$1/$2', ['as' => 'backend.posts.delete']);
+    $routes->delete('posts/(:any)/(:any)', 'PostController::destroy/$1/$2', ['as' => 'backend.posts.delete']);
 
     // Map Settings Routes
     $routes->group('maps', function ($routes) {
+
         // Categories Routes
         $routes->group('categories', function ($routes) {
             $routes->get('/', 'CategoryController::index', ['as' => 'backend.maps.categories.index']);
@@ -120,19 +122,19 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
 
         $routes->get('/', 'MapController::index', ['as' => 'backend.maps.index']);
         $routes->post('/', 'MapController::store', ['as' => 'backend.maps.store']);
+        $routes->get('ajax', 'MapController::ajaxIndex', ['as' => 'backend.maps.index.ajax']);
         $routes->get('create', 'MapController::create', ['as' => 'backend.maps.create']);
         $routes->get('(:any)/edit', 'MapController::edit/$1', ['as' => 'backend.maps.edit']);
         $routes->patch('(:any)', 'MapController::update/$1', ['as' => 'backend.maps.update']);
-        $routes->delete('(:any)', 'MapController::destroy/$1', ['as' => 'backend.maps.delete']);
     });
 
     // Profiles Routes
-    $routes->group('profile', function ($routes) {
+    $routes->group('profiles', function ($routes) {
         $routes->get('/', 'ProfileController::index', ['as' => 'backend.profiles.index']);
-        $routes->post('/', 'ProfileController::store', ['as' => 'backend.profiles.store']);
+        $routes->get('ajax', 'ProfileController::ajaxIndex', ['as' => 'backend.profiles.index.ajax']);
+        $routes->post('ajax', 'ProfileController::ajaxStore', ['as' => 'backend.profiles.store.ajax']);
         $routes->get('(:any)/edit', 'ProfileController::edit/$1', ['as' => 'backend.profiles.edit']);
         $routes->patch('(:any)', 'ProfileController::update/$1', ['as' => 'backend.profiles.update']);
-        $routes->delete('(:any)', 'ProfileController::destroy/$1', ['as' => 'backend.profiles.destroy']);
     });
 });
 

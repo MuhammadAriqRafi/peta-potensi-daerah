@@ -1,7 +1,7 @@
 <?php
 
 if (!function_exists("storeAs")) {
-    function storeAs($file, $path = 'img', $context = null): string
+    function storeAs($file, $path = 'img/', $context = null): string
     {
         helper('text');
 

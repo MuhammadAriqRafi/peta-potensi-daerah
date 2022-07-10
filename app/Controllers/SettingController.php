@@ -57,4 +57,27 @@ class SettingController extends BaseController
 
         return redirect()->back()->with('success', 'Setting berhasil diubah!');
     }
+
+    public function ajaxUpdate($id = null)
+    {
+        return $this->response->setJSON($this->request->getVar());
+        // $backsound = $this->request->getFile('value');
+
+        // if (!$this->validate([
+        //     'value' => $backsound ? 'uploaded[value]' : 'required'
+        // ])) {
+        //     return redirect()->back()->withInput();
+        // }
+
+        // if ($backsound) $backsoundName = storeAs($backsound, 'file', 'setting');
+
+        // $this->settings->save([
+        //     'setting_id' => $id,
+        //     'value' => $backsoundName ?? $this->request->getVar('value'),
+        //     'class' => '',
+        //     'sort' => 0
+        // ]);
+
+        // return redirect()->back()->with('success', 'Setting berhasil diubah!');
+    }
 }
