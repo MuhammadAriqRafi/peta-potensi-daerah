@@ -78,25 +78,26 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
         });
 
         $routes->get('/', 'PopupController::index', ['as' => 'backend.popups.index']);
-        $routes->post('/', 'PopupController::store', ['as' => 'backend.popups.store']);
-        $routes->get('(:any)/edit', 'PopupController::edit/$1', ['as' => 'backend.popups.edit']);
-        $routes->patch('(:any)', 'PopupController::update/$1', ['as' => 'backend.popups.update']);
-        $routes->delete('(:num)', 'PopupController::destroy/$1', ['as' => 'backend.popups.delete']);
+        $routes->get('(:any)', 'PopupController::$1');
+        $routes->post('(:any)', 'PopupController::$1');
+        // $routes->post('/', 'PopupController::store', ['as' => 'backend.popups.store']);
+        // $routes->get('(:any)/edit', 'PopupController::edit/$1', ['as' => 'backend.popups.edit']);
+        // $routes->patch('(:any)', 'PopupController::update/$1', ['as' => 'backend.popups.update']);
+        // $routes->delete('(:num)', 'PopupController::destroy/$1', ['as' => 'backend.popups.delete']);
     });
 
     // Settings Routes
     $routes->group('settings', function ($routes) {
         $routes->get('/', 'SettingController::index', ['as' => 'backend.settings.index']);
-        $routes->get('(:any)/edit', 'SettingController::edit/$1', ['as' => 'backend.settings.edit']);
-        $routes->patch('(:num)', 'SettingController::update/$1', ['as' => 'backend.settings.update']);
         $routes->patch('ajax/(:any)', 'SettingController::ajaxUpdate/$1', ['as' => 'backend.settings.update.ajax']);
     });
 
     // Menu Manager Routes
     $routes->group('menus', function ($routes) {
         $routes->get('/', 'MenuController::index', ['as' => 'backend.menus.index']);
-        $routes->get('(:any)/edit', 'MenuController::edit/$1', ['as' => 'backend.menus.edit']);
-        $routes->patch('(:any)', 'MenuController::update/$1', ['as' => 'backend.menus.update']);
+        $routes->post('/', 'MenuController::ajaxStore', ['as' => 'backend.menus.store.ajax']);
+        $routes->post('edit', 'MenuController::ajaxShow', ['as' => 'backend.menus.show.ajax']);
+        $routes->patch('(:any)', 'MenuController::ajaxUpdate/$1', ['as' => 'backend.menus.update.ajax']);
     });
 
     // Posts Routes

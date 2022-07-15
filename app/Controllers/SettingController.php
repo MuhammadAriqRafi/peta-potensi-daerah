@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\Setting;
-use Config\Services;
 
 class SettingController extends BaseController
 {
@@ -25,59 +24,54 @@ class SettingController extends BaseController
         return view('setting/index', $data);
     }
 
-    public function edit($id = null)
-    {
-        $data = [
-            'title' => 'Edit Settings',
-            'setting' => $this->settings->find(base64_decode($id)),
-            'validation' => Services::validation()
-        ];
-
-        return view('setting/edit', $data);
-    }
-
-    public function update($id = null)
-    {
-        $backsound = $this->request->getFile('value');
-
-        if (!$this->validate([
-            'value' => $backsound ? 'uploaded[value]' : 'required'
-        ])) {
-            return redirect()->back()->withInput();
-        }
-
-        if ($backsound) $backsoundName = storeAs($backsound, 'file', 'setting');
-
-        $this->settings->save([
-            'setting_id' => $id,
-            'value' => $backsoundName ?? $this->request->getVar('value'),
-            'class' => '',
-            'sort' => 0
-        ]);
-
-        return redirect()->back()->with('success', 'Setting berhasil diubah!');
-    }
-
     public function ajaxUpdate($id = null)
     {
-        return $this->response->setJSON($this->request->getVar());
-        // $backsound = $this->request->getFile('value');
+        $id = base64_decode($id);
+        $setting = $this->settings->select('keyword, value')->find($id);
 
-        // if (!$this->validate([
-        //     'value' => $backsound ? 'uploaded[value]' : 'required'
-        // ])) {
-        //     return redirect()->back()->withInput();
-        // }
+        // TODO: Get csrf token from header for the sake of curiousity
+        if ($setting['keyword'] == 'backsound') {
+            // Set rules to the file
+            $backsound = $this->request->getFile('value');
+            $rules = $this->settings->getSettingValidationRules('uploaded[value]|max_size[value,1024]|is_image[value]|mime_in[value,image/jpg,image/jpeg,image/png]');
+        } else $rules = $this->settings->getSettingValidationRules();
 
-        // if ($backsound) $backsoundName = storeAs($backsound, 'file', 'setting');
+        // Validate the input
+        if (!$this->validate($rules)) {
+            return $this->response->setJSON([_validate($rules), $this->request->headers()]);
+        }
 
-        // $this->settings->save([
-        //     'setting_id' => $id,
-        //     'value' => $backsoundName ?? $this->request->getVar('value'),
-        //     'class' => '',
-        //     'sort' => 0
-        // ]);
+        // Store the file (if input is file)
+        if ($setting['keyword'] == 'backsound') {
+            try {
+                unlink('file/' . $setting['value']);
+                $backsoundName = storeAs($backsound, 'file', 'setting');
+            } catch (\Throwable $th) {
+                return $this->response->setJSON($th->getMessage());
+            }
+        }
 
-        // return redirect()->back()->with('success', 'Setting berhasil diubah!');
+        // Preparing the data
+        $data = [
+            'setting_id' => $id,
+            'value' => $this->request->getVar('value') ?? $backsoundName,
+            'class' => '',
+            'sort' => 0
+        ];
+
+        if ($this->settings->save($data)) {
+            $data = $this->settings->select('value, type')->find($id);
+
+            return $this->response->setJSON([
+                'status' => true,
+                'message' => 'Setting berhasil diubah',
+                'data' => $data
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => 'Setting gagal diubah'
+            ]);
+        }
     }
 }

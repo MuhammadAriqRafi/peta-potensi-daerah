@@ -22,4 +22,5 @@ const reload = () => {
 
 const resetInvalidClass = (element) => {
     $(element).find('.is-invalid').removeClass('is-invalid');
+    if($(element).find('.text-danger')) $(element).find('.text-danger').text('');
 }

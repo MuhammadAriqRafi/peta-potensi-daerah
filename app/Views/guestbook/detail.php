@@ -16,5 +16,5 @@
 <!-- Message Content -->
 <p class="mt-5"><?= $guestbook['messages']; ?></p>
 
-<a href="<?= route_to('backend.guestbooks.index'); ?>" class="btn btn-danger mt-4">Cancel</a>
+<a href="<?= route_to('backend.guestbooks.index'); ?>" class="btn btn-outline-primary mt-4">Back</a>
 <?= $this->endSection(); ?>

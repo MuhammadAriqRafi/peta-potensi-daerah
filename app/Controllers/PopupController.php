@@ -19,9 +19,10 @@ class PopupController extends BaseController
     {
         $data = [
             'title' => 'Pop Up Manager',
-            'popups' => $this->popup->findAll(),
+            'popups' => $this->popup->orderBy('popup_id', 'DESC')->findAll(),
             'validation' => Services::validation(),
-            'currentActivePopup' => $this->popup->where('status', 'active')->first()
+            'currentActivePopup' => $this->popup->where('status', 'active')->first(),
+            'storeUrl' => '/backend/popups/ajaxStore'
         ];
 
         return view('popup/index', $data);
@@ -126,5 +127,38 @@ class PopupController extends BaseController
         ]);
 
         return redirect()->back()->with('success', 'Berhasil update pop up active!');
+    }
+
+    // Ajax Method
+    public function ajaxStore()
+    {
+        $rules = $this->popup->getPopupValidationRules();
+
+        if (!$this->validate($rules)) {
+            return $this->response->setJSON(_validate($rules));
+        }
+
+        $imageName = storeAs($this->request->getFile('image'), 'img', 'popup');
+
+        $data = [
+            'title' => $this->request->getVar('title'),
+            'value' => $imageName
+        ];
+
+        if ($this->popup->save($data)) {
+            $newPopup = $this->popup->find($this->popup->getInsertID());
+            $newPopup['actions'] = strtr(editDeleteBtn(false), ['$id' => $newPopup['popup_id']]);
+
+            return $this->response->setJSON([
+                'status' => true,
+                'message' => 'Popup berhasil ditambahkan',
+                'data' => $newPopup
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => 'Popup gagal ditambahkan'
+            ]);
+        }
     }
 }

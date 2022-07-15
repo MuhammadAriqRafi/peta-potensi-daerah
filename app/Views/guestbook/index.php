@@ -2,7 +2,7 @@
 
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
-<table class="table">
+<table class="table" id="guestbookTable">
     <thead>
         <th>Action</th>
         <th>Title</th>
@@ -34,4 +34,23 @@
         <?php endforeach ?>
     </tbody>
 </table>
+<?= $this->endSection(); ?>
+
+<?= $this->section('script'); ?>
+<script>
+    $(document).ready(function() {
+        // ? DataTables
+        let table = $('#guestbookTable').DataTable({
+            pageLength: 10,
+            lengthMenu: [
+                [10, 25, 50, 99999],
+                [10, 25, 50, 'All'],
+            ],
+            // TODO: Build serverSide functionality for datatables
+            // ajax: '<?= site_url(route_to('backend.profiles.index.ajax')); ?>',
+            // serverSide: true,
+            // deferRender: true
+        });
+    });
+</script>
 <?= $this->endSection(); ?>

@@ -41,26 +41,6 @@ class Post extends Model
 
     // Ajax Methods
 
-    public function _validate($rules)
-    {
-        $validation = Services::validation();
-
-        $data = [];
-        $data['status'] = false;
-        $data['input_error'] = [];
-
-        foreach ($rules as $key => $rule) {
-            if ($validation->hasError($key)) {
-                $data['input_error'][] = [
-                    'input_name' => $key,
-                    'error_message' => $validation->getError($key)
-                ];
-            }
-        }
-
-        return $data;
-    }
-
     // ? Maps
     public function ajaxGetMaps($start, $length)
     {

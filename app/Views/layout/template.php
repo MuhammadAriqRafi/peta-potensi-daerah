@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?= csrf_meta() ?>
     <title>Peta Potensi Daerah</title>
 
     <?php
@@ -43,6 +44,11 @@
 
     <!-- Custom styles for this template -->
     <link href="<?= base_url('css/dashboard.css'); ?>" rel="stylesheet">
+
+    <script>
+        let siteUrl = '<?= site_url(); ?>';
+        let baseUrl = '<?= base_url(); ?>';
+    </script>
 
     <?= $this->renderSection('css'); ?>
 </head>

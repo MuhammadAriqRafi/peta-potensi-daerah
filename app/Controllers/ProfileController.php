@@ -82,7 +82,7 @@ class ProfileController extends PostController
         $rules = $this->profiles->getProfileValidationRules();
 
         if (!$this->validate($rules)) {
-            return $this->response->setJSON($this->profiles->_validate($rules));
+            return $this->response->setJSON(_validate($rules));
         }
 
         $title = $this->request->getVar('title');

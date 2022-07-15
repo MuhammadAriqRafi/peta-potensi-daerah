@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use Config\Services;
 
 class Setting extends Model
 {
@@ -30,5 +31,12 @@ class Setting extends Model
         }
 
         return $this->where(['id' => $id])->first();
+    }
+
+    public function getSettingValidationRules($specialRule = null)
+    {
+        return $rules = [
+            'value' => $specialRule ?? 'required',
+        ];
     }
 }
