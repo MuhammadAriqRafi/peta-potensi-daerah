@@ -53,6 +53,7 @@
 
     const update = (id) => {}
 
+    // TODO: Build sorting datatable functionality, read the documentation
     $(document).ready(function() {
         let table = $('#mapTable').DataTable({
             pageLength: 10,

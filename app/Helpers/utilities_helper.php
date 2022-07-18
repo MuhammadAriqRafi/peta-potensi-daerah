@@ -7,11 +7,11 @@ if (!function_exists("editDeleteBtn")) {
     {
         if ($context)
             return '
-        <a href="#" class="btn btn-sm btn-outline-warning" onclick="update(`$id`)">Ubah</a>
-        <a href="#" class="btn btn-sm btn-outline-danger" onclick="destroy(`$id`,`$context`)">Hapus</a>';
+        <button class="btn btn-sm btn-outline-warning" onclick="edit(`$id`)">Ubah</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="destroy(`$id`,`$context`)">Hapus</button>';
         else return '
-        <a href="#" class="btn btn-sm btn-outline-warning" onclick="update(`$id`)">Ubah</a>
-        <a href="#" class="btn btn-sm btn-outline-danger" onclick="destroy(`$id`)">Hapus</a>';
+        <button class="btn btn-sm btn-outline-warning" onclick="edit(`$id`)">Ubah</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="destroy(`$id`)">Hapus</button>';
     }
 }
 
@@ -34,5 +34,16 @@ if (!function_exists("_validate")) {
         }
 
         return $data;
+    }
+}
+
+if (!function_exists("encodeId")) {
+    function encodeId($records, $idFieldName): array
+    {
+        foreach ($records as $key => $record) {
+            $records[$key][$idFieldName] = base64_encode($record[$idFieldName]);
+        }
+
+        return $records;
     }
 }

@@ -72,18 +72,11 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
 
     // Popups Routes
     $routes->group('popups', function ($routes) {
-        // Popup Statuses Routes
-        $routes->group('status', function ($routes) {
-            $routes->patch('/', 'PopupController::update_status', ['as' => 'backend.popups.statuses.update']);
-        });
-
         $routes->get('/', 'PopupController::index', ['as' => 'backend.popups.index']);
         $routes->get('(:any)', 'PopupController::$1');
         $routes->post('(:any)', 'PopupController::$1');
-        // $routes->post('/', 'PopupController::store', ['as' => 'backend.popups.store']);
-        // $routes->get('(:any)/edit', 'PopupController::edit/$1', ['as' => 'backend.popups.edit']);
-        // $routes->patch('(:any)', 'PopupController::update/$1', ['as' => 'backend.popups.update']);
-        // $routes->delete('(:num)', 'PopupController::destroy/$1', ['as' => 'backend.popups.delete']);
+        $routes->patch('(:any)', 'PopupController::$1');
+        $routes->delete('(:any)', 'PopupController::$1');
     });
 
     // Settings Routes

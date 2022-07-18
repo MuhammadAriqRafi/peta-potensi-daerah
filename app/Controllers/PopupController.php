@@ -22,35 +22,17 @@ class PopupController extends BaseController
             'popups' => $this->popup->orderBy('popup_id', 'DESC')->findAll(),
             'validation' => Services::validation(),
             'currentActivePopup' => $this->popup->where('status', 'active')->first(),
-            'storeUrl' => '/backend/popups/ajaxStore'
+            'storeUrl' => '/backend/popups/ajaxStore',
+            'indexUrl' => '/backend/popups/ajaxIndex',
+            'destroyUrl' => '/backend/popups/ajaxDestroy/',
+            'editUrl' => '/backend/popups/ajaxEdit/',
+            'updateUrl' => '/backend/popups/ajaxUpdate/',
+            'updateActivePopupUrl' => '/backend/popups/ajaxUpdateActivePopup',
         ];
 
+        $data['popups'] = encodeId($data['popups'], 'popup_id');
+
         return view('popup/index', $data);
-    }
-
-    public function store()
-    {
-        if (!$this->validate([
-            'title' => 'required',
-            'image' => [
-                'rules' => 'uploaded[image]|max_size[image,1024]|is_image[image]|mime_in[image,image/jpg,image/jpeg,image/png]',
-                'errors' => [
-                    'uploaded' => 'Image is required'
-                ]
-            ]
-        ])) {
-            return redirect()->back()->withInput();
-        }
-
-        // Retrieve image file from input field\
-        $imageName = storeAs($this->request->getFile('image'), 'img', 'popup');
-
-        $this->popup->save([
-            'title' => $this->request->getVar('title'),
-            'value' => $imageName
-        ]);
-
-        return redirect()->back()->with('success', 'Pop up berhasil ditambahkan!');
     }
 
     public function edit($id = null)
@@ -92,44 +74,15 @@ class PopupController extends BaseController
         return redirect()->back()->with('success', 'Pop up berhasil diubah!');
     }
 
-    public function destroy($id = null)
-    {
-        // Find current popup record
-        $popup = $this->popup->find($id);
-
-        // Delete image file of the current record
-        try {
-            unlink('img/' . $popup['value']);
-        } catch (\Throwable $th) {
-            return redirect()->back()->with('error', $th->getMessage());
-        }
-
-        $this->popup->delete($id);
-        return redirect()->back()->with('success', 'Pop Up berhasil dihapus!');
-    }
-
-    public function update_status()
-    {
-        if (!$this->validate([
-            'status' => 'required'
-        ])) {
-            return redirect()->back()->withInput();
-        }
-
-        $this->popup->save([
-            'popup_id' => base64_decode($this->request->getVar('status')),
-            'status' => 'active'
-        ]);
-
-        $this->popup->save([
-            'popup_id' => base64_decode($this->request->getVar('oldActivePopup')),
-            'status' => 'non_active'
-        ]);
-
-        return redirect()->back()->with('success', 'Berhasil update pop up active!');
-    }
-
     // Ajax Method
+    public function ajaxIndex()
+    {
+        $popups = $this->popup->findAll();
+        $popups = encodeId($popups, 'popup_id');
+
+        return $this->response->setJSON($popups);
+    }
+
     public function ajaxStore()
     {
         $rules = $this->popup->getPopupValidationRules();
@@ -147,6 +100,7 @@ class PopupController extends BaseController
 
         if ($this->popup->save($data)) {
             $newPopup = $this->popup->find($this->popup->getInsertID());
+            $newPopup['popup_id'] = base64_encode($newPopup['popup_id']);
             $newPopup['actions'] = strtr(editDeleteBtn(false), ['$id' => $newPopup['popup_id']]);
 
             return $this->response->setJSON([
@@ -158,6 +112,74 @@ class PopupController extends BaseController
             return $this->response->setJSON([
                 'status' => false,
                 'message' => 'Popup gagal ditambahkan'
+            ]);
+        }
+    }
+
+    public function ajaxUpdate()
+    {
+        return $this->response->setJSON(['asd' => 'asd']);
+    }
+
+    public function ajaxEdit($id = null)
+    {
+        $id = base64_decode($id);
+        $popup = $this->popup->select('title, value')->find($id);
+
+        return $this->response->setJSON($popup);
+    }
+
+    public function ajaxDestroy($id = null)
+    {
+        $id = base64_decode($id);
+        $popup = $this->popup->find($id);
+        $message = 'Pop Up berhasil dihapus';
+
+        try {
+            unlink('img/' . $popup['value']);
+        } catch (\Throwable $th) {
+            $message = $th->getMessage();
+        }
+
+        if ($this->popup->delete($id)) {
+            return $this->response->setJSON(['message' => $message, 'idDeletedPopup' => base64_encode($id)]);
+        } else {
+            return $this->response->setJSON(['message' => 'Terjadi kesalahan pada server']);
+        }
+    }
+
+    public function ajaxUpdateActivePopup()
+    {
+        if (!$this->validate(['id' => 'required'])) {
+            return $this->response->setJSON(_validate(['id' => 'required']));
+        }
+
+        $oldActivePopupId = base64_decode($this->request->getVar('oldActivePopup'));
+        $newActivePopupId = base64_decode($this->request->getVar('id'));
+
+        $updateOldActivePopup = $this->popup->save([
+            'popup_id' => $oldActivePopupId,
+            'status' => 'non_active'
+        ]);
+
+        $updateNewActivePopup = $this->popup->save([
+            'popup_id' => $newActivePopupId,
+            'status' => 'active'
+        ]);
+
+        if ($updateOldActivePopup && $updateNewActivePopup) {
+            $updatedActivePopup = $this->popup->select('popup_id, value, title')->find($newActivePopupId);
+            $updatedActivePopup['popup_id'] = base64_encode($updatedActivePopup['popup_id']);
+
+            return $this->response->setJSON([
+                'status' => true,
+                'message' => 'Pop Up Active berhasil diubah',
+                'data' => $updatedActivePopup
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => 'Pop Up Active gagal diubah'
             ]);
         }
     }
