@@ -116,17 +116,56 @@ class PopupController extends BaseController
         }
     }
 
-    public function ajaxUpdate()
-    {
-        return $this->response->setJSON(['asd' => 'asd']);
-    }
-
     public function ajaxEdit($id = null)
     {
         $id = base64_decode($id);
-        $popup = $this->popup->select('title, value')->find($id);
+        $popup = $this->popup->select('title, value, popup_id')->find($id);
+        $popup['popup_id'] = base64_encode($popup['popup_id']);
 
         return $this->response->setJSON($popup);
+    }
+
+    public function ajaxUpdate()
+    {
+        $rules = $this->popup->getPopupValidationRules();
+
+        if (!$this->validate($rules)) {
+            return $this->response->setJSON(_validate($rules));
+        }
+
+        $id = base64_decode($this->request->getVar('id'));
+        $message = 'Pop Up berhasil diubah';
+        $oldImage = $this->request->getVar('oldImage');
+
+        try {
+            unlink('img/' . $oldImage);
+        } catch (\Throwable $th) {
+            $message = $th->getMessage();
+        }
+
+        $imageName = storeAs($this->request->getFile('image'), 'img/', 'popup');
+
+        $data = [
+            'popup_id' => $id,
+            'title' => $this->request->getVar('title'),
+            'value' => $imageName
+        ];
+
+        if ($this->popup->save($data)) {
+            $updatedPopup = $this->popup->find($id);
+            $updatedPopup['popup_id'] = base64_encode($updatedPopup['popup_id']);
+
+            return $this->response->setJSON([
+                'status' => true,
+                'message' => $message,
+                'data' => $updatedPopup
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => 'Pop Up gagal diubah',
+            ]);
+        }
     }
 
     public function ajaxDestroy($id = null)
@@ -154,14 +193,17 @@ class PopupController extends BaseController
             return $this->response->setJSON(_validate(['id' => 'required']));
         }
 
-        $oldActivePopupId = base64_decode($this->request->getVar('oldActivePopup'));
+        if ($this->request->getVar('oldActivePopup')) {
+            $oldActivePopupId = base64_decode($this->request->getVar('oldActivePopup'));
+            $updateOldActivePopup = $this->popup->save([
+                'popup_id' => $oldActivePopupId,
+                'status' => 'non_active'
+            ]);
+        } else {
+            $updateOldActivePopup = true;
+        }
+
         $newActivePopupId = base64_decode($this->request->getVar('id'));
-
-        $updateOldActivePopup = $this->popup->save([
-            'popup_id' => $oldActivePopupId,
-            'status' => 'non_active'
-        ]);
-
         $updateNewActivePopup = $this->popup->save([
             'popup_id' => $newActivePopupId,
             'status' => 'active'

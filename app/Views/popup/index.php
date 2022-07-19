@@ -2,7 +2,7 @@
 
 <?= $this->section('toolbar'); ?>
 <!-- Button trigger modal -->
-<button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#popupModal">
+<button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#popupModal" onclick="create()">
     Tambah Data
 </button>
 
@@ -31,7 +31,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                    <button type="button" class="btn btn-primary" onclick="store()">Tambah</button>
+                    <button type="button" class="btn btn-primary" onclick="save()">Tambah</button>
                 </div>
             </form>
         </div>
@@ -87,11 +87,21 @@
 <?= $this->section('script'); ?>
 <script src="<?= base_url('js/ajaxUtilities.js'); ?>"></script>
 <script>
-    const titleField = $('#title');
-    const imageField = $('#image');
-
     const createNewPopupSelectOption = (id, title, status) => {
         return `<option value="${id}" ${status == 'active' ? 'selected': ''}>${title}</option>`;
+    }
+
+    const displayError = (inputError) => {
+        inputError.forEach(error => {
+            $(`[name="${error.input_name}"]`).addClass('is-invalid');
+            $(`[name="${error.input_name}"]`).next().text(error.error_message);
+            if (error.input_name == 'image') $(`[name="${error.input_name}"]`).prev().attr('src', '');
+        });
+    }
+
+    const isTheFormInUpdateState = () => {
+        if ($('input[name="oldImage"]').length > 0) return true;
+        return false;
     }
 
     const previewImg = () => {
@@ -105,6 +115,11 @@
         }
     }
 
+    const resetForm = () => {
+        $('#popupForm').trigger('reset');
+        $(`[name="image"]`).prev().attr('src', '');
+    }
+
     const index = () => {
         const url = siteUrl + '<?= $indexUrl; ?>';
 
@@ -113,9 +128,18 @@
         }).then(response => response.json());
     }
 
-    const store = () => {
-        const form = $('#popupForm')[0];
-        const data = new FormData(form);
+    const create = () => {
+        $('#popupModalLabel').text('Tambah Pop Up');
+        $('.modal-footer .btn-primary').text('Tambah');
+        if (isTheFormInUpdateState()) {
+            $('input[name="title"]').val('');
+            $('input[name="image"]').prev().attr('src', '#');
+            $('input[name="oldImage"]').remove();
+            $('input[name="id"]').remove();
+        }
+    }
+
+    const store = (data) => {
         const url = siteUrl + '<?= $storeUrl; ?>';
 
         $.ajax({
@@ -135,15 +159,10 @@
                             <td>${response.data.actions ?? '-'}</td>
                         </tr>
                         `);
-                    $('#popupForm').trigger('reset');
-                    $(`[name="image"]`).prev().attr('src', '');
+                    resetForm();
                     $('select[name="id"]').prepend(createNewPopupSelectOption(response.data.popup_id, response.data.title, response.data.status));
                 } else {
-                    response.input_error.forEach(error => {
-                        $(`[name="${error.input_name}"]`).addClass('is-invalid');
-                        $(`[name="${error.input_name}"]`).next().text(error.error_message);
-                        if (error.input_name == 'image') $(`[name="${error.input_name}"]`).prev().attr('src', '');
-                    });
+                    displayError(response.input_error);
                 }
             }
         });
@@ -152,6 +171,7 @@
     const destroy = (id) => {
         if (confirm('apakah anda yakin?')) {
             let url = siteUrl + '<?= $destroyUrl; ?>' + id;
+            const oldActivePopupInput = $('input[name="oldActivePopup"]');
 
             $.ajax({
                 type: "POST",
@@ -161,7 +181,12 @@
                 },
                 dataType: "json",
                 success: function(response) {
-                    console.log(response);
+                    if (id == oldActivePopupInput.val()) {
+                        oldActivePopupInput.val('');
+                        $('#activePopupImage').attr('src', '#');
+                        $('option:selected').remove();
+                    }
+
                     alert(response.message);
                     $(`tr[id="${response.idDeletedPopup}"]`).remove();
                 }
@@ -171,38 +196,69 @@
 
     const edit = (id) => {
         let url = siteUrl + '<?= $editUrl; ?>' + id;
+        $(document).find('.is-invalid').removeClass('is-invalid');
 
         $.ajax({
-            type: "GET",
+            type: "POST",
             url: url,
             dataType: "json",
             success: function(response) {
                 $('[name="title"]').val(response.title);
-                if ($('input[name="oldImage"]').length < 1) $('#popupForm').prepend(`<input type="hidden" name="oldImage" value="${response.value}">`);
-                else $('input[name="oldImage"]').val(response.value);
+                $('[name="image"]').prev().attr('src', baseUrl + `/img/${response.value}`);
+
+                if (!isTheFormInUpdateState()) $('#popupForm').prepend(`
+                    <input type="hidden" name="oldImage" value="${response.value}">
+                    <input type="hidden" name="id" value="${response.popup_id}">
+                `);
+                else {
+                    $('input[name="oldImage"]').val(response.value);
+                    $('input[name="id"]').val(response.popup_id);
+                };
+
+                $('#popupModalLabel').text('Ubah Pop Up');
+                $('.modal-footer .btn-primary').text('Ubah');
                 $('#popupModal').modal('show');
-                // TODO: Implement update function
             }
         });
     }
 
-    const update = (id) => {
+    const update = (id, data) => {
         let url = siteUrl + '<?= $updateUrl; ?>' + id;
 
         $.ajax({
             type: "POST",
             url: url,
-            data: {
-                _method: "PATCH",
-                title: 'asd'
-            },
+            data: data,
             processData: false,
             contentType: false,
             dataType: "json",
             success: function(response) {
-                console.log(response);
+                if (response.status) {
+                    alert(response.message);
+                    $(`tr[id="${response.data.popup_id}"] td`).first().text(response.data.title);
+                    $(`tr[id="${response.data.popup_id}"] td`).eq(1).text(response.data.value);
+                    resetForm();
+                    $('#popupModal').modal('hide');
+                } else {
+                    if (response.input_error) {
+                        displayError(response.input_error);
+                    } else {
+                        alert(response.message);
+                    }
+                }
             }
         });
+    }
+
+    const save = () => {
+        const form = $('#popupForm')[0];
+        const data = new FormData(form);
+
+        if ($('input[name="oldImage"]').length < 1) store(data);
+        else {
+            let id = $('input[name="id"]').val();
+            update(id, data);
+        }
     }
 
     const getActivePopup = () => {
@@ -210,13 +266,18 @@
         const oldActivePopup = $('[name="oldActivePopup"]');
 
         data.then(popups => {
+            let isAnyActivePopup = false;
+
             popups.forEach(popup => {
                 $(`select[name="id"]`).prepend(createNewPopupSelectOption(popup.popup_id, popup.title, popup.status));
                 if (popup.status == 'active') {
+                    isAnyActivePopup = true;
                     oldActivePopup.val(popup.popup_id);
                     $('#activePopupImage').attr('src', baseUrl + `/img/${popup.value}`);
                 }
             });
+
+            if (!isAnyActivePopup) $('select[name="id"]').prev().text('Pop Up Active (None)');
         });
     }
 
@@ -233,7 +294,6 @@
             contentType: false,
             dataType: "json",
             success: function(response) {
-                console.log(response);
                 if (response.status) {
                     alert(response.message);
                     $(`option[value="${response.data.popup_id}"]`).attr('selected', 'selected');
