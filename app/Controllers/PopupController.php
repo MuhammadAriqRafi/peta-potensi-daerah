@@ -128,22 +128,22 @@ class PopupController extends BaseController
     public function ajaxUpdate()
     {
         $rules = $this->popup->getPopupValidationRules();
+        $rules['image']['rules'] = str_replace('uploaded[image]|', '', $rules['image']['rules']);
 
         if (!$this->validate($rules)) {
             return $this->response->setJSON(_validate($rules));
         }
 
         $id = base64_decode($this->request->getVar('id'));
-        $message = 'Pop Up berhasil diubah';
         $oldImage = $this->request->getVar('oldImage');
+        $newImage = $this->request->getFile('image');
 
-        try {
-            unlink('img/' . $oldImage);
-        } catch (\Throwable $th) {
-            $message = $th->getMessage();
+        if ($newImage->getError() != 4) {
+            $message = deleteImage($oldImage, 'img/', 'Pop Up');
+            $imageName = storeAs($this->request->getFile('image'), 'img/', 'popup');
+        } else {
+            $imageName = $oldImage;
         }
-
-        $imageName = storeAs($this->request->getFile('image'), 'img/', 'popup');
 
         $data = [
             'popup_id' => $id,
@@ -152,8 +152,7 @@ class PopupController extends BaseController
         ];
 
         if ($this->popup->save($data)) {
-            $updatedPopup = $this->popup->find($id);
-            $updatedPopup['popup_id'] = base64_encode($updatedPopup['popup_id']);
+            $updatedPopup = $this->popup->select('title, value, status')->find($id);
 
             return $this->response->setJSON([
                 'status' => true,
@@ -172,16 +171,14 @@ class PopupController extends BaseController
     {
         $id = base64_decode($id);
         $popup = $this->popup->find($id);
-        $message = 'Pop Up berhasil dihapus';
-
-        try {
-            unlink('img/' . $popup['value']);
-        } catch (\Throwable $th) {
-            $message = $th->getMessage();
-        }
+        $message = deleteImage($popup['value'], 'img/', 'Pop Up');
 
         if ($this->popup->delete($id)) {
-            return $this->response->setJSON(['message' => $message, 'idDeletedPopup' => base64_encode($id)]);
+            return $this->response->setJSON([
+                'message' => $message,
+                'idDeletedPopup' => base64_encode($id),
+                'isActivePopupExist' => $this->popup->isActivePopupExist()
+            ]);
         } else {
             return $this->response->setJSON(['message' => 'Terjadi kesalahan pada server']);
         }

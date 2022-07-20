@@ -35,4 +35,11 @@ class Popup extends Model
             ]
         ];
     }
+
+    public function isActivePopupExist()
+    {
+        $activePopup = $this->where('status', 'active')->countAllResults();
+        if ($activePopup) return true;
+        return false;
+    }
 }

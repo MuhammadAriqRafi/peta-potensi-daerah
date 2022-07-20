@@ -87,6 +87,7 @@
 <?= $this->section('script'); ?>
 <script src="<?= base_url('js/ajaxUtilities.js'); ?>"></script>
 <script>
+    // Helper
     const createNewPopupSelectOption = (id, title, status) => {
         return `<option value="${id}" ${status == 'active' ? 'selected': ''}>${title}</option>`;
     }
@@ -99,7 +100,7 @@
         });
     }
 
-    const isTheFormInUpdateState = () => {
+    const isPopupFormInUpdateState = () => {
         if ($('input[name="oldImage"]').length > 0) return true;
         return false;
     }
@@ -120,6 +121,7 @@
         $(`[name="image"]`).prev().attr('src', '');
     }
 
+    // CRUD
     const index = () => {
         const url = siteUrl + '<?= $indexUrl; ?>';
 
@@ -131,7 +133,8 @@
     const create = () => {
         $('#popupModalLabel').text('Tambah Pop Up');
         $('.modal-footer .btn-primary').text('Tambah');
-        if (isTheFormInUpdateState()) {
+
+        if (isPopupFormInUpdateState()) {
             $('input[name="title"]').val('');
             $('input[name="image"]').prev().attr('src', '#');
             $('input[name="oldImage"]').remove();
@@ -181,10 +184,16 @@
                 },
                 dataType: "json",
                 success: function(response) {
+                    // ? Delete the pop up active option for the deleted popup and reset the previewImg
                     if (id == oldActivePopupInput.val()) {
                         oldActivePopupInput.val('');
                         $('#activePopupImage').attr('src', '#');
-                        $('option:selected').remove();
+                        $(`option[value="${id}"]`).remove();
+                    }
+
+                    // ? Informing if there is no any active popup
+                    if (!response.isActivePopupExist) {
+                        $('select[name="id"]').prev().text('Pop Up Active (None)');
                     }
 
                     alert(response.message);
@@ -206,7 +215,7 @@
                 $('[name="title"]').val(response.title);
                 $('[name="image"]').prev().attr('src', baseUrl + `/img/${response.value}`);
 
-                if (!isTheFormInUpdateState()) $('#popupForm').prepend(`
+                if (!isPopupFormInUpdateState()) $('#popupForm').prepend(`
                     <input type="hidden" name="oldImage" value="${response.value}">
                     <input type="hidden" name="id" value="${response.popup_id}">
                 `);
@@ -235,8 +244,17 @@
             success: function(response) {
                 if (response.status) {
                     alert(response.message);
-                    $(`tr[id="${response.data.popup_id}"] td`).first().text(response.data.title);
-                    $(`tr[id="${response.data.popup_id}"] td`).eq(1).text(response.data.value);
+                    $(`tr[id="${id}"] td`).first().text(response.data.title);
+                    $(`tr[id="${id}"] td`).eq(1).text(response.data.value);
+
+                    // ? Update the popup active option for the updated popup
+                    $(`option[value="${id}"]`).text(response.data.title);
+
+                    // ? Update the popup active image display to the new updated popup image
+                    if (id == $('input[name="oldActivePopup"]').val()) {
+                        $('#activePopupImage').attr('src', baseUrl + `/img/${response.data.value}`);
+                    }
+
                     resetForm();
                     $('#popupModal').modal('hide');
                 } else {
@@ -261,6 +279,7 @@
         }
     }
 
+    // Active Popup
     const getActivePopup = () => {
         const data = index();
         const oldActivePopup = $('[name="oldActivePopup"]');
@@ -299,11 +318,14 @@
                     $(`option[value="${response.data.popup_id}"]`).attr('selected', 'selected');
                     $('#activePopupImage').attr('src', baseUrl + `/img/${response.data.value}`);
                     $('[name="oldActivePopup"]').val(response.data.popup_id);
+
+                    if ($('select[name="id"]').prev().text() == 'Pop Up Active (None)') {
+                        $('select[name="id"]').prev().text('Pop Up Active');
+                    }
                 } else {
-                    response.input_error.forEach(error => {
-                        $(`[name="${error.input_name}"]`).addClass('is-invalid');
-                        $(`[name="${error.input_name}"]`).next().text(error.error_message);
-                    });
+                    if (response.input_error) {
+                        displayError(response.input_error);
+                    }
                 }
             }
         });
