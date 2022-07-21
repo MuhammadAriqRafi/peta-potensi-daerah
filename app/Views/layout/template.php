@@ -44,6 +44,7 @@
 
     <!-- Custom styles for this template -->
     <link href="<?= base_url('css/dashboard.css'); ?>" rel="stylesheet">
+    <link href="<?= base_url('css/app.css'); ?>" rel="stylesheet">
 
     <script>
         let siteUrl = '<?= site_url(); ?>';
@@ -52,6 +53,8 @@
 
     <?= $this->renderSection('css'); ?>
 </head>
+
+<!-- TODO: Implement tailwind to the view -->
 
 <body>
     <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
