@@ -55,16 +55,7 @@
 
     // TODO: Build sorting datatable functionality, read the documentation
     $(document).ready(function() {
-        let table = $('#mapTable').DataTable({
-            pageLength: 10,
-            lengthMenu: [
-                [10, 25, 50, 99999],
-                [10, 25, 50, 'All'],
-            ],
-            ajax: '<?= site_url(route_to('backend.maps.index.ajax')); ?>',
-            serverSide: true,
-            deferRender: true
-        });
+        let table = createDataTable('mapTable', '<?= site_url(route_to('backend.maps.index.ajax')); ?>');
     });
 </script>
 <?= $this->endSection(); ?>

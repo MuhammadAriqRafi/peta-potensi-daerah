@@ -2,6 +2,7 @@
 
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
+
 <table class="table" id="guestbookTable">
     <thead>
         <th>Action</th>

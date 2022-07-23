@@ -66,30 +66,31 @@
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
 
-<table class="table">
-    <thead>
-        <th>NIK</th>
-        <th>Nama</th>
-        <th>Username</th>
-        <th>Actions</th>
-    </thead>
-    <tbody>
-        <?php foreach ($administrators as $administrator) : ?>
-            <tr>
-                <td><?= $administrator['nik']; ?></td>
-                <td><?= $administrator['nama']; ?></td>
-                <td><?= $administrator['username']; ?></td>
-                <td>
-                    <form action="<?= route_to('backend.administrators.delete', $administrator['admin_id']); ?>" method="POST">
-                        <?= csrf_field(); ?>
-                        <input type="hidden" name="_method" value="DELETE">
-                        <a href="<?= route_to('backend.administrators.edit', base64_encode($administrator['admin_id'])); ?>" class="btn btn-sm btn-outline-warning">Edit</a>
-                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah anda yakin?')">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        <?php endforeach ?>
-    </tbody>
-</table>
-
+<div class="overflow-x-auto">
+    <table class="table table-zebra w-full">
+        <thead>
+            <th>NIK</th>
+            <th>Nama</th>
+            <th>Username</th>
+            <th>Actions</th>
+        </thead>
+        <tbody>
+            <?php foreach ($administrators as $administrator) : ?>
+                <tr>
+                    <td><?= $administrator['nik']; ?></td>
+                    <td><?= $administrator['nama']; ?></td>
+                    <td><?= $administrator['username']; ?></td>
+                    <td>
+                        <form action="<?= route_to('backend.administrators.delete', $administrator['admin_id']); ?>" method="POST">
+                            <?= csrf_field(); ?>
+                            <input type="hidden" name="_method" value="DELETE">
+                            <a href="<?= route_to('backend.administrators.edit', base64_encode($administrator['admin_id'])); ?>" class="btn btn-sm btn-outline-warning">Edit</a>
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah anda yakin?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            <?php endforeach ?>
+        </tbody>
+    </table>
+</div>
 <?= $this->endSection(); ?>

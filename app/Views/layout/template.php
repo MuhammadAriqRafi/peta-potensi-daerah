@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="lemonade">
 
 <head>
     <meta charset="UTF-8">
@@ -17,25 +17,6 @@
     }
     ?>
 
-    <style>
-        .bd-placeholder-img {
-            font-size: 1.125rem;
-            text-anchor: middle;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            user-select: none;
-        }
-
-        @media (min-width: 768px) {
-            .bd-placeholder-img-lg {
-                font-size: 3.5rem;
-            }
-        }
-    </style>
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
-
     <!-- Jquery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 
@@ -46,52 +27,132 @@
     <link href="<?= base_url('css/dashboard.css'); ?>" rel="stylesheet">
     <link href="<?= base_url('css/app.css'); ?>" rel="stylesheet">
 
+    <!-- Storing Utility Js Variables -->
     <script>
         let siteUrl = '<?= site_url(); ?>';
         let baseUrl = '<?= base_url(); ?>';
     </script>
 
+    <!--Inline Custom Styling -->
+    <style>
+        ul.pagination {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            border: 1px solid;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        ul.pagination>li:hover {
+            color: #FBBD23;
+        }
+
+        input[type="search"] {
+            padding: 12px;
+            border: 1px solid #2A303C;
+            border-radius: 8px;
+        }
+    </style>
+
     <?= $this->renderSection('css'); ?>
 </head>
 
-<!-- TODO: Implement tailwind to the view -->
-
 <body>
-    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
-        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="<?= route_to('backend.dashboard.index'); ?>">Peta Potensi Daerah</a>
-        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <!-- <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search"> -->
-        <div class="navbar-nav">
-            <div class="nav-item text-nowrap d-flex">
-                <a class="nav-link px-3" href="<?= route_to('backend.guestbooks.index'); ?>"><span class="text-warning"><?= countUnreadMessages() ?></span> Guestbook</a>
-                <a class="nav-link px-3" href="<?= route_to('logout'); ?>">Logout</a>
-            </div>
-        </div>
-    </header>
+    <div class="overflow-y-hidden max-h-screen">
 
-    <div class="container-fluid">
-        <div class="row">
-            <?= $this->include('layout/navbar'); ?>
+        <?= $this->renderSection('modal'); ?>
 
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pb-5">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-5 border-bottom">
-                    <h1 class="h2"><?= $title; ?></h1>
-                    <?= $this->renderSection('toolbar'); ?>
+        <div class="drawer drawer-mobile">
+            <input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
+
+            <!-- Page Content -->
+            <div class="drawer-content flex flex-col items-center justify-start">
+                <!-- Navbar -->
+                <div class="navbar bg-base-100 justify-between pr-6 pt-4">
+                    <!-- Mobile Navbar Button -->
+                    <div class="flex-none">
+                        <label for="my-drawer-2" class="btn drawer-button lg:hidden">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-5 h-5 stroke-current">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </label>
+                    </div>
+                    <!-- End of Mobile Navbar Button -->
+
+                    <div class="flex-none gap-2">
+                        <!-- Search -->
+                        <div class="form-control p-0">
+                            <input type="text" placeholder="Search" class="input input-bordered" />
+                        </div>
+                        <!-- End of Search -->
+
+                        <!-- Profile Dropdows -->
+                        <div class="dropdown dropdown-end">
+                            <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+                                <div class="w-10 rounded-full">
+                                    <img src="https://placeimg.com/80/80/people" />
+                                </div>
+                            </label>
+
+                            <ul tabindex="0" class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52">
+                                <li>
+                                    <a class="justify-between">
+                                        Profile
+                                        <span class="badge">New</span>
+                                    </a>
+                                </li>
+                                <li><a>Settings</a></li>
+                                <li><a>Logout</a></li>
+                            </ul>
+                        </div>
+                        <!-- End of Profile Dropdows -->
+
+                        <div class="btn-group hidden sm:inline">
+                            <a class="btn" href="<?= route_to('backend.guestbooks.index'); ?>">
+                                <span class="text-warning mr-2"><?= countUnreadMessages() ?></span> Guestbook
+                            </a>
+                            <a class="btn btn-active" href="<?= route_to('logout'); ?>">Logout</a>
+                        </div>
+                    </div>
                 </div>
-                <?= $this->renderSection('content'); ?>
-            </main>
+                <!-- End of Navbar -->
+
+                <!-- Body -->
+                <main class="w-full pt-8 sm:pt-4 p-4 pr-6 mb-8 overflow-x-hidden overflow-y-auto">
+                    <div class="mb-10 flex justify-between items-center">
+                        <h1 class="text-2xl sm:text-4xl font-bold"><?= $title; ?></h1>
+                        <?= $this->renderSection('toolbar'); ?>
+                    </div>
+                    <?= $this->renderSection('content'); ?>
+                </main>
+                <!-- End of Body -->
+            </div>
+            <!-- End of Page Content -->
+
+            <!-- Sidebar -->
+            <div class="drawer-side">
+                <label for="my-drawer-2" class="drawer-overlay"></label>
+                <ul class="menu p-4 pl-6 overflow-y-auto w-80 bg-base-100 text-base-content">
+                    <a class="btn btn-ghost normal-case text-xl justify-start mb-4" href="<?= route_to('backend.dashboard.index'); ?>">Peta Potensi Daerah</a>
+                    <?= $this->include('layout/sidebar'); ?>
+                    <div class="btn-group sm:hidden inline mt-auto mx-auto mb-2">
+                        <a class="btn" href="<?= route_to('backend.guestbooks.index'); ?>">
+                            <span class="text-warning mr-2"><?= countUnreadMessages() ?></span> Guestbook
+                        </a>
+                        <a class="btn btn-active" href="<?= route_to('logout'); ?>">Logout</a>
+                    </div>
+                </ul>
+            </div>
+            <!-- End of Sidebar -->
         </div>
     </div>
 
-    <!-- Bootstrap -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" crossorigin="anonymous"></script>
     <!-- DataTables -->
     <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
 
+    <!-- Custom Script -->
     <?= $this->renderSection('script'); ?>
 </body>
 

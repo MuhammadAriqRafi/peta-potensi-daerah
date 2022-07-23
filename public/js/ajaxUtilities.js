@@ -21,6 +21,21 @@ const reload = () => {
 }
 
 const resetInvalidClass = (element) => {
-    $(element).find('.is-invalid').removeClass('is-invalid');
-    if($(element).find('.text-danger')) $(element).find('.text-danger').text('');
+    $(element).find('.text-error').text('');
+    if($(element).find('.textarea-error').length > 0) $(element).find('.textarea-error').removeClass('textarea-error');
+    if($(element).find('.input-error').length > 0) $(element).find('.input-error').removeClass('input-error');
+}
+
+const createDataTable = (id, url) => {
+    $(`#${id}`).DataTable({
+        pageLength: 10,
+        lengthMenu: [
+            [10, 25, 50, 99999],
+            [10, 25, 50, 'All'],
+        ],
+        ajax: url,
+        serverSide: true,
+        deferRender: true,
+        dom: '<"overflow-x-hidden"<"flex flex-wrap gap-4 justify-center sm:justify-between items-center mb-5"lf><t><"flex justify-between items-center mt-5"ip>>',
+    });
 }

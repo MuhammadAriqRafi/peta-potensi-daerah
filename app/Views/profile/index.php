@@ -6,11 +6,23 @@
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 <?= $this->endSection(); ?>
 
+<?= $this->section('modal'); ?>
+<!-- Put this part before </body> tag -->
+<input type="checkbox" id="popupModal" class="modal-toggle" />
+<div class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Congratulations random Internet user!</h3>
+        <p class="py-4">You've been selected for a chance to get one year of subscription to use Wikipedia for free!</p>
+        <div class="modal-action">
+            <label for="popupModal" class="btn">Yay!</label>
+        </div>
+    </div>
+</div>
+<?= $this->endSection(); ?>
+
 <?= $this->section('toolbar'); ?>
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addProfileModal">
-    Tambah Data
-</button>
+<!-- The button to open modal -->
+<label for="popupModal" class="btn modal-button">Tambah Data</label>
 
 <!-- Modal -->
 <div class="modal fade" id="addProfileModal" tabindex="-1" aria-labelledby="addProfileModalLabel" aria-hidden="true">
@@ -72,20 +84,21 @@
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
 
-<table class="table" id="profileTable">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Date Publish</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-    </tbody>
-</table>
-
+<div class="overflow-x-auto">
+    <table class="table table-zebra w-full" id="profileTable">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Date Publish</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>
@@ -101,9 +114,6 @@
                 dataType: "json",
                 success: function(response) {
                     if (response.status == 1) alert(response.message);
-                },
-                complete: function() {
-                    // TODO: Consider not reloading the data, instead delete particular row in datatables
                     reload();
                 }
             });
@@ -176,16 +186,7 @@
 
     $(document).ready(function() {
         // ? DataTables
-        let table = $('#profileTable').DataTable({
-            pageLength: 10,
-            lengthMenu: [
-                [10, 25, 50, 99999],
-                [10, 25, 50, 'All'],
-            ],
-            ajax: '<?= site_url(route_to('backend.profiles.index.ajax')); ?>',
-            serverSide: true,
-            deferRender: true
-        });
+        let table = createDataTable('profileTable', '<?= site_url(route_to('backend.profiles.index.ajax')); ?>');
     });
 </script>
 <?= $this->endSection(); ?>
