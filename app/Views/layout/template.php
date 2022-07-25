@@ -81,12 +81,6 @@
                     <!-- End of Mobile Navbar Button -->
 
                     <div class="flex-none gap-2">
-                        <!-- Search -->
-                        <div class="form-control p-0">
-                            <input type="text" placeholder="Search" class="input input-bordered" />
-                        </div>
-                        <!-- End of Search -->
-
                         <!-- Profile Dropdows -->
                         <div class="dropdown dropdown-end">
                             <label tabindex="0" class="btn btn-ghost btn-circle avatar">

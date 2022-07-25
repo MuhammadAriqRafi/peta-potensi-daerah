@@ -16,14 +16,19 @@ const editDeleteBtn = (id = null) => {
     <a href="#" class="btn btn-sm btn-outline-danger" onclick="destroy('${id}')">Delete</a>`
 }
 
-const reload = () => {
-    table.ajax.reload(null, false);
+const reload = (formId) => {
+    $(`#${formId}`).DataTable().ajax.reload(null, false);
 }
 
 const resetInvalidClass = (element) => {
-    $(element).find('.text-error').text('');
-    if($(element).find('.textarea-error').length > 0) $(element).find('.textarea-error').removeClass('textarea-error');
-    if($(element).find('.input-error').length > 0) $(element).find('.input-error').removeClass('input-error');
+    const textareaError = $(element).find('.textarea-error');
+    const inputError = $(element).find('.input-error');
+
+    $(element).find('.badge-error').text('');
+    $(element).find('.badge-error').addClass('hidden');
+
+    if(textareaError.length > 0) textareaError.removeClass('textarea-error');
+    if(inputError.length > 0) inputError.removeClass('input-error');
 }
 
 const createDataTable = (id, url) => {
@@ -38,4 +43,8 @@ const createDataTable = (id, url) => {
         deferRender: true,
         dom: '<"overflow-x-hidden"<"flex flex-wrap gap-4 justify-center sm:justify-between items-center mb-5"lf><t><"flex justify-between items-center mt-5"ip>>',
     });
+}
+
+const closeModal = (modalId) => {
+    $(`#${modalId}`).prop('checked', false);
 }

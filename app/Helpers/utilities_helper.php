@@ -7,11 +7,11 @@ if (!function_exists("editDeleteBtn")) {
     {
         if ($context)
             return '
-        <button class="btn btn-sm btn-outline-warning" onclick="edit(`$id`)">Ubah</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="destroy(`$id`,`$context`)">Hapus</button>';
+        <button class="btn btn-sm btn-secondary" onclick="edit(`$id`)">Ubah</button>
+        <button class="btn btn-sm btn-error" onclick="destroy(`$id`,`$context`)">Hapus</button>';
         else return '
-        <button class="btn btn-sm btn-outline-warning" onclick="edit(`$id`)">Ubah</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="destroy(`$id`)">Hapus</button>';
+        <button class="btn btn-sm btn-secondary" onclick="edit(`$id`)">Ubah</button>
+        <button class="btn btn-sm btn-error" onclick="destroy(`$id`)">Hapus</button>';
     }
 }
 

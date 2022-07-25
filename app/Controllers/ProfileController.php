@@ -21,7 +21,9 @@ class ProfileController extends PostController
             'title' => 'Tentang Aplikasi',
             'profiles' => $this->profiles->getProfiles(),
             'statuses' => ['draft', 'publish'],
-            'validation' => Services::validation()
+            'validation' => Services::validation(),
+            'storeUrl' => '/backend/profiles/ajaxStore',
+            'indexUrl' => '/backend/profiles/ajaxIndex'
         ];
 
         return view('profile/index', $data);

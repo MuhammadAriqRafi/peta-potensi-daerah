@@ -1,50 +1,53 @@
 <?= $this->extend('layout/template'); ?>
 
-<?= $this->section('toolbar'); ?>
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#popupModal" onclick="create()">
-    Tambah Data
-</button>
+<!-- // TODO: Fix the image input file view in the form -->
 
-<!-- Modal -->
-<div class="modal fade" id="popupModal" tabindex="-1" aria-labelledby="popupModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="popupModalLabel">Tambah Pop Up</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<?= $this->section('modal'); ?>
+<!-- Put this part before </body> tag -->
+<input type="checkbox" id="popupModal" onclick="create()" class="modal-toggle" />
+<div class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box sm:p-8">
+        <h3 id="popupModalLabel" class="font-bold text-2xl sm:text-4xl mb-6">Tambah Pop Up</h3>
+
+        <!-- Popup Form -->
+        <form id="popupForm" enctype="multipart/form-data">
+            <?= csrf_field(); ?>
+            <!-- Title Input -->
+            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
+                <span class="label-text font-bold">Judul</span>
+                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="title" />
+                <div id="error-title" class="badge badge-error hidden"></div>
+            </div>
+            <!-- Image Input File -->
+            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
+                <span class="label-text font-bold">Image</span>
+                <img src="#" height="100" class="img-thumbnail img-preview mb-2">
+                <input type="file" id="image" class="input input-bordered w-full max-w-xs my-2" name="image" onchange="previewImg()" accept="image/jpg, image/jpeg, image/png" />
+                <div id="error-image" class="badge badge-error hidden"></div>
             </div>
 
-            <form method="POST" enctype="multipart/form-data" id="popupForm">
-                <div class="modal-body">
-                    <div class="mb-3" onclick="resetInvalidClass(this)">
-                        <label for="title" class="form-label">Judul</label>
-                        <input type="text" class="form-control" name="title" autofocus>
-                        <div class="invalid-feedback"></div>
-                    </div>
-                    <div class="mb-3" onclick="resetInvalidClass(this)">
-                        <label for="image" class="form-label">Gambar Pop Up</label><br>
-                        <img src="#" height="100" class="img-thumbnail mb-3 img-preview">
-                        <input class="form-control" type="file" id="image" name="image" onchange="previewImg()" accept="image/jpg, image/jpeg, image/png">
-                        <div class="invalid-feedback"></div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                    <button type="button" class="btn btn-primary" onclick="save()">Tambah</button>
-                </div>
-            </form>
-        </div>
+            <!-- Modal Action Buttons -->
+            <div class="modal-action">
+                <label for="popupModal" class="btn btn-error">Batal</label>
+                <label class="btn btn-primary" onclick="save()">Tambah</label>
+            </div>
+        </form>
+        <!-- End of Popup Form -->
     </div>
 </div>
 <?= $this->endSection(); ?>
 
+<?= $this->section('toolbar'); ?>
+<!-- The button to open modal -->
+<label for="popupModal" class="btn modal-button">Tambah Data</label>
+<?= $this->endSection(); ?>
+
 <?= $this->section('content'); ?>
-<div class="row">
-    <div class="col-8">
+<div class="flex w-100 justify-between flex-wrap">
+    <div class="w-full sm:w-7/12">
         <?= $this->include('layout/flashMessageAlert'); ?>
 
-        <table class="table" id="popupTable">
+        <table class="table table-striped w-full" id="popupTable">
             <thead>
                 <tr>
                     <th scope="col">Judul</th>
@@ -58,8 +61,8 @@
                         <td><?= $popup['title']; ?></td>
                         <td><?= $popup['value'] ?? '-'; ?></td>
                         <td>
-                            <button class="btn btn-sm btn-outline-warning" onclick="edit('<?= $popup['popup_id']; ?>')">Ubah</button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="destroy('<?= $popup['popup_id']; ?>')">Hapus</button>
+                            <button class="btn btn-sm btn-secondary" onclick="edit('<?= $popup['popup_id']; ?>')">Ubah</button>
+                            <button class="btn btn-sm btn-error" onclick="destroy('<?= $popup['popup_id']; ?>')">Hapus</button>
                         </td>
                     </tr>
                 <?php endforeach ?>
@@ -67,15 +70,17 @@
         </table>
     </div>
 
-    <div class="col-4">
+    <div class="divider lg:divider-horizontal sm:w-1/12"></div>
+
+    <div class="w-full sm:w-4/12">
         <img id="activePopupImage" class="img-thumbnail mb-3" height="100">
         <form method="POST" id="updateActivePopupForm">
             <input type="hidden" name="_method" value="PATCH">
             <input type="hidden" name="oldActivePopup">
             <!-- Active Pop Up Dropdown -->
-            <div class="mb-3">
-                <label for="id" class="form-label fw-bold">Pop Up Active</label>
-                <select name="id" class="form-select"></select>
+            <div class="flex flex-col">
+                <label for="id" class="font-semibold">Pop Up Active</label>
+                <select name="id" class="select select-bordered w-full max-w-xs sm:max-w-none my-4"></select>
                 <div class="invalid-feedback"></div>
             </div>
             <button type="button" class="btn btn-sm btn-outline-primary" onclick="updateActivePopup()">Ubah</button>
@@ -94,8 +99,9 @@
 
     const displayError = (inputError) => {
         inputError.forEach(error => {
-            $(`[name="${error.input_name}"]`).addClass('is-invalid');
+            $(`[name="${error.input_name}"]`).addClass('input-error');
             $(`[name="${error.input_name}"]`).next().text(error.error_message);
+            $(`[name="${error.input_name}"]`).next().removeClass('hidden');
             if (error.input_name == 'image') $(`[name="${error.input_name}"]`).prev().attr('src', '');
         });
     }
@@ -132,7 +138,7 @@
 
     const create = () => {
         $('#popupModalLabel').text('Tambah Pop Up');
-        $('.modal-footer .btn-primary').text('Tambah');
+        $('.modal-action .btn-primary').text('Tambah');
 
         if (isPopupFormInUpdateState()) {
             $('input[name="title"]').val('');
@@ -173,7 +179,7 @@
 
     const destroy = (id) => {
         if (confirm('apakah anda yakin?')) {
-            let url = siteUrl + '<?= $destroyUrl; ?>' + id;
+            const url = siteUrl + '<?= $destroyUrl; ?>' + id;
             const oldActivePopupInput = $('input[name="oldActivePopup"]');
 
             $.ajax({
@@ -184,11 +190,12 @@
                 },
                 dataType: "json",
                 success: function(response) {
+                    $(`option[value="${id}"]`).remove();
+
                     // ? Delete the pop up active option for the deleted popup and reset the previewImg
                     if (id == oldActivePopupInput.val()) {
-                        oldActivePopupInput.val('');
                         $('#activePopupImage').attr('src', '#');
-                        $(`option[value="${id}"]`).remove();
+                        oldActivePopupInput.val('');
                     }
 
                     // ? Informing if there is no any active popup
@@ -204,29 +211,34 @@
     }
 
     const edit = (id) => {
-        let url = siteUrl + '<?= $editUrl; ?>' + id;
-        $(document).find('.is-invalid').removeClass('is-invalid');
+        const url = siteUrl + '<?= $editUrl; ?>' + id;
 
         $.ajax({
             type: "POST",
             url: url,
             dataType: "json",
             success: function(response) {
+                // ? Reset the form
+                $('#popupForm').find('.badge-error').text('');
+                $('#popupForm').find('.badge-error').addClass('hidden');
+                $('#popupForm').find('.input-error').removeClass('input-error');
+
                 $('[name="title"]').val(response.title);
                 $('[name="image"]').prev().attr('src', baseUrl + `/img/${response.value}`);
 
-                if (!isPopupFormInUpdateState()) $('#popupForm').prepend(`
+                if (!isPopupFormInUpdateState()) {
+                    $('#popupForm').prepend(`
                     <input type="hidden" name="oldImage" value="${response.value}">
                     <input type="hidden" name="id" value="${response.popup_id}">
                 `);
-                else {
+                } else {
                     $('input[name="oldImage"]').val(response.value);
                     $('input[name="id"]').val(response.popup_id);
                 };
 
                 $('#popupModalLabel').text('Ubah Pop Up');
-                $('.modal-footer .btn-primary').text('Ubah');
-                $('#popupModal').modal('show');
+                $('.modal-action .btn-primary').text('Ubah');
+                $('#popupModal').prop('checked', true);
             }
         });
     }
@@ -256,7 +268,7 @@
                     }
 
                     resetForm();
-                    $('#popupModal').modal('hide');
+                    $('#popupModal').prop('checked', false);
                 } else {
                     if (response.input_error) {
                         displayError(response.input_error);
@@ -334,16 +346,15 @@
     $(document).ready(function() {
         getActivePopup();
 
-        // let table = $('#popupTable').DataTable({
-        //     pageLength: 10,
-        //     lengthMenu: [
-        //         [10, 25, 50, 99999],
-        //         [10, 25, 50, 'All'],
-        //     ],
-        //     // ajax: '<?= site_url(route_to('backend.profiles.index.ajax')); ?>',
-        //     // serverSide: true,
-        //     // deferRender: true
-        // });
+        // TODO: Implement server side functionality to the datatable
+        let table = $('#popupTable').DataTable({
+            pageLength: 10,
+            lengthMenu: [
+                [10, 25, 50, 99999],
+                [10, 25, 50, 'All'],
+            ],
+            dom: '<"overflow-x-hidden"<"flex flex-wrap gap-4 justify-center sm:justify-between items-center mb-5"lf><t><"flex justify-between items-center mt-5"ip>>'
+        });
     });
 </script>
 <?= $this->endSection(); ?>

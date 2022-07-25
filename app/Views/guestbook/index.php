@@ -3,7 +3,7 @@
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
 
-<table class="table" id="guestbookTable">
+<table class="table w-full" id="guestbookTable">
     <thead>
         <th>Action</th>
         <th>Title</th>
@@ -47,6 +47,7 @@
                 [10, 25, 50, 99999],
                 [10, 25, 50, 'All'],
             ],
+            dom: '<"overflow-x-hidden"<"flex flex-wrap gap-4 justify-center sm:justify-between items-center mb-5"lf><t><"flex justify-between items-center mt-5"ip>>',
             // TODO: Build serverSide functionality for datatables
             // ajax: '<?= site_url(route_to('backend.profiles.index.ajax')); ?>',
             // serverSide: true,

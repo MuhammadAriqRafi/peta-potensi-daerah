@@ -125,10 +125,15 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
     // Profiles Routes
     $routes->group('profiles', function ($routes) {
         $routes->get('/', 'ProfileController::index', ['as' => 'backend.profiles.index']);
-        $routes->get('ajax', 'ProfileController::ajaxIndex', ['as' => 'backend.profiles.index.ajax']);
-        $routes->post('ajax', 'ProfileController::ajaxStore', ['as' => 'backend.profiles.store.ajax']);
-        $routes->get('(:any)/edit', 'ProfileController::edit/$1', ['as' => 'backend.profiles.edit']);
-        $routes->patch('(:any)', 'ProfileController::update/$1', ['as' => 'backend.profiles.update']);
+        $routes->get('(:any)', 'ProfileController::$1');
+        $routes->post('(:any)', 'ProfileController::$1');
+        $routes->patch('(:any)', 'ProfileController::$1');
+        $routes->delete('(:any)', 'ProfileController::$1');
+        // $routes->get('/', 'ProfileController::index', ['as' => 'backend.profiles.index']);
+        // $routes->get('ajax', 'ProfileController::ajaxIndex', ['as' => 'backend.profiles.index.ajax']);
+        // $routes->post('ajax', 'ProfileController::ajaxStore', ['as' => 'backend.profiles.store.ajax']);
+        // $routes->get('(:any)/edit', 'ProfileController::edit/$1', ['as' => 'backend.profiles.edit']);
+        // $routes->patch('(:any)', 'ProfileController::update/$1', ['as' => 'backend.profiles.update']);
     });
 });
 

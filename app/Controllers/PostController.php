@@ -38,10 +38,10 @@ class PostController extends BaseController
     public function ajaxGetDataDataTables($context, $model)
     {
         helper('utilities');
-        $draw = $_REQUEST['draw'];
-        $start = $_REQUEST['start'];
-        $length = $_REQUEST['length'];
-        $search = $_REQUEST['search']['value'];
+        $draw = $this->request->getVar('draw');
+        $start = $this->request->getVar('start');
+        $length = $this->request->getVar('length');
+        $search = $this->request->getVar('search')['value'];
         $total = $context == 'maps' ? $model->ajaxGetTotalMaps() : $model->ajaxGetTotalProfiles();
         $output = [
             'length' => $length,

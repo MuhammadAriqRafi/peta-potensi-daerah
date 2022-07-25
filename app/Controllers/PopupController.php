@@ -137,6 +137,7 @@ class PopupController extends BaseController
         $id = base64_decode($this->request->getVar('id'));
         $oldImage = $this->request->getVar('oldImage');
         $newImage = $this->request->getFile('image');
+        $message = 'Pop Up berhasil diubah';
 
         if ($newImage->getError() != 4) {
             $message = deleteImage($oldImage, 'img/', 'Pop Up');
