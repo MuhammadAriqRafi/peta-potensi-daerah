@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use App\Controllers\Interfaces\DatatableInterface;
 use CodeIgniter\Model;
 
-class Popup extends Model
+class Popup extends Model implements DatatableInterface
 {
     protected $DBGroup          = 'default';
     protected $table            = 'popup';
@@ -41,5 +42,35 @@ class Popup extends Model
         $activePopup = $this->where('status', 'active')->countAllResults();
         if ($activePopup) return true;
         return false;
+    }
+
+    public function getRecords($start, $length)
+    {
+        return $this->select('title, value, status, popup_id')
+            ->orderBy('popup_id', 'DESC')
+            ->findAll();
+    }
+
+    public function getTotalRecords()
+    {
+        return $this->countAllResults() ?? 0;
+    }
+
+    public function getRecordSearch($search, $start, $length)
+    {
+        return $this->select('title, value, status, popup_id')
+            ->orderBy('popup_id', 'DESC')
+            ->like('title', $search)
+            ->orLike('value', $search)
+            ->findAll($length, $start);
+    }
+
+    public function getTotalRecordSearch($search)
+    {
+        return $this->select('title, value, status popup_id')
+            ->orderBy('popup_id', 'DESC')
+            ->like('title', $search)
+            ->orLike('value', $search)
+            ->countAllResults();
     }
 }

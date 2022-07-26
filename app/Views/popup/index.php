@@ -47,26 +47,15 @@
     <div class="w-full sm:w-7/12">
         <?= $this->include('layout/flashMessageAlert'); ?>
 
-        <table class="table table-striped w-full" id="popupTable">
+        <table class="table table-zebra w-full" id="popupTable">
             <thead>
                 <tr>
                     <th scope="col">Judul</th>
                     <th scope="col">Gambar Pop Up</th>
                     <th scope="col">Aksi</th>
+                    <th scope="col">Status</th>
                 </tr>
             </thead>
-            <tbody>
-                <?php foreach ($popups as $popup) : ?>
-                    <tr id="<?= $popup['popup_id']; ?>">
-                        <td><?= $popup['title']; ?></td>
-                        <td><?= $popup['value'] ?? '-'; ?></td>
-                        <td>
-                            <button class="btn btn-sm btn-secondary" onclick="edit('<?= $popup['popup_id']; ?>')">Ubah</button>
-                            <button class="btn btn-sm btn-error" onclick="destroy('<?= $popup['popup_id']; ?>')">Hapus</button>
-                        </td>
-                    </tr>
-                <?php endforeach ?>
-            </tbody>
         </table>
     </div>
 
@@ -79,7 +68,7 @@
             <input type="hidden" name="oldActivePopup">
             <!-- Active Pop Up Dropdown -->
             <div class="flex flex-col">
-                <label for="id" class="font-semibold">Pop Up Active</label>
+                <label for="id" class="font-semibold">Pop Up Active (None)</label>
                 <select name="id" class="select select-bordered w-full max-w-xs sm:max-w-none my-4"></select>
                 <div class="invalid-feedback"></div>
             </div>
@@ -127,15 +116,8 @@
         $(`[name="image"]`).prev().attr('src', '');
     }
 
+    // TODO: Update still need fixing
     // CRUD
-    const index = () => {
-        const url = siteUrl + '<?= $indexUrl; ?>';
-
-        return fetch(url, {
-            method: "GET"
-        }).then(response => response.json());
-    }
-
     const create = () => {
         $('#popupModalLabel').text('Tambah Pop Up');
         $('.modal-action .btn-primary').text('Tambah');
@@ -190,6 +172,7 @@
                 },
                 dataType: "json",
                 success: function(response) {
+                    console.log(response);
                     $(`option[value="${id}"]`).remove();
 
                     // ? Delete the pop up active option for the deleted popup and reset the previewImg
@@ -291,29 +274,8 @@
         }
     }
 
-    // Active Popup
-    const getActivePopup = () => {
-        const data = index();
-        const oldActivePopup = $('[name="oldActivePopup"]');
-
-        data.then(popups => {
-            let isAnyActivePopup = false;
-
-            popups.forEach(popup => {
-                $(`select[name="id"]`).prepend(createNewPopupSelectOption(popup.popup_id, popup.title, popup.status));
-                if (popup.status == 'active') {
-                    isAnyActivePopup = true;
-                    oldActivePopup.val(popup.popup_id);
-                    $('#activePopupImage').attr('src', baseUrl + `/img/${popup.value}`);
-                }
-            });
-
-            if (!isAnyActivePopup) $('select[name="id"]').prev().text('Pop Up Active (None)');
-        });
-    }
-
     const updateActivePopup = () => {
-        let url = siteUrl + '<?= $updateActivePopupUrl; ?>';
+        const url = siteUrl + '<?= $updateActivePopupUrl; ?>';
         const form = $('#updateActivePopupForm')[0];
         const data = new FormData(form);
 
@@ -344,17 +306,39 @@
     }
 
     $(document).ready(function() {
-        getActivePopup();
-
         // TODO: Implement server side functionality to the datatable
-        let table = $('#popupTable').DataTable({
-            pageLength: 10,
-            lengthMenu: [
-                [10, 25, 50, 99999],
-                [10, 25, 50, 'All'],
-            ],
-            dom: '<"overflow-x-hidden"<"flex flex-wrap gap-4 justify-center sm:justify-between items-center mb-5"lf><t><"flex justify-between items-center mt-5"ip>>'
-        });
+        const table = createDataTable('popupTable', siteUrl + '<?= $indexUrl; ?>', [{
+                data: 'title'
+            },
+            {
+                data: 'value'
+            },
+            {
+                data: 'popup_id',
+                render: function(data) {
+                    return `
+                        <button class="btn btn-sm btn-secondary" onclick="edit('${data}')">Ubah</button>
+                        <button class="btn btn-sm btn-error" onclick="destroy('${data}')">Hapus</button>
+                    `;
+                }
+            },
+            {
+                data: 'status',
+                visible: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    $(`select[name="id"]`).prepend(createNewPopupSelectOption(row.popup_id, row.title, row.status));
+
+                    if (row.status == 'active') {
+                        $('select[name="id"]').prev().text('Pop Up Active');
+                        $('input[name="oldActivePopup"]').val(row.popup_id);
+                        $('#activePopupImage').attr('src', baseUrl + `/img/${row.value}`);
+                    }
+
+                    return true;
+                }
+            },
+        ]);
     });
 </script>
 <?= $this->endSection(); ?>

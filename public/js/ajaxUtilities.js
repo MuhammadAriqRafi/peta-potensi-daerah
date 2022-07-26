@@ -1,3 +1,4 @@
+// ! urlFormatter Function Deprecated
 const urlFormatter = (url, id = null, context = null) => {
     if (context != null) {
         url = url.replace(':id', id);
@@ -31,7 +32,7 @@ const resetInvalidClass = (element) => {
     if(inputError.length > 0) inputError.removeClass('input-error');
 }
 
-const createDataTable = (id, url) => {
+const createDataTable = (id, url, options) => {
     $(`#${id}`).DataTable({
         pageLength: 10,
         lengthMenu: [
@@ -42,6 +43,7 @@ const createDataTable = (id, url) => {
         serverSide: true,
         deferRender: true,
         dom: '<"overflow-x-hidden"<"flex flex-wrap gap-4 justify-center sm:justify-between items-center mb-5"lf><t><"flex justify-between items-center mt-5"ip>>',
+        columns: options
     });
 }
 

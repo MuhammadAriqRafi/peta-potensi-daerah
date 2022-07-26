@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use App\Controllers\Interfaces\DatatableInterface;
 use CodeIgniter\Model;
 
-class Administrator extends Model
+class Administrator extends Model implements DatatableInterface
 {
     protected $DBGroup          = 'default';
     protected $table            = 'administrators';
@@ -15,13 +16,6 @@ class Administrator extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = ['nik', 'nama', 'username', 'password'];
-
-    // Dates
-    protected $useTimestamps = false;
-    protected $dateFormat    = 'datetime';
-    protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
-    protected $deletedField  = 'deleted_at';
 
     // Callbacks
     protected $allowCallbacks = true;
@@ -39,5 +33,46 @@ class Administrator extends Model
         return $this->db->table('administrators')
             ->select('admin_id, nik, nama, username')
             ->get()->getResultArray();
+    }
+
+    public function fetchValidationRules(): array
+    {
+        return $rules = [
+            'nik' => 'required|is_unique[administrators.nik]',
+            'nama' => 'required',
+            'username' => 'required',
+            'password' => 'required',
+            'passconf' => 'required|matches[password]'
+        ];
+    }
+
+    public function getRecords($start, $length)
+    {
+        return $this->select('nik, nama, username, admin_id')
+            ->orderBy('admin_id', 'DESC')
+            ->findAll($length, $start);
+    }
+
+    public function getTotalRecords()
+    {
+        return $this->countAllResults() ?? 0;
+    }
+
+    public function getRecordSearch($search, $start, $length)
+    {
+        return $this->orderBy('admin_id', 'DESC')
+            ->like('nik', $search)
+            ->orLike('nama', $search)
+            ->orLike('username', $search)
+            ->findAll($start, $length);
+    }
+
+    public function getTotalRecordSearch($search)
+    {
+        return $this->orderBy('admin_id', 'DESC')
+            ->like('nik', $search)
+            ->orLike('nama', $search)
+            ->orLike('username', $search)
+            ->countAllResults();
     }
 }

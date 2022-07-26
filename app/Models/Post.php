@@ -66,7 +66,7 @@ class Post extends Model
             ->orLike('category.title', $search)
             ->orLike('DATE(date_publish)', $search)
             ->orLike('status', $search)
-            ->findAll($start, $length);
+            ->findAll($length, $start);
     }
 
     public function ajaxGetTotalMapsSearch($search)

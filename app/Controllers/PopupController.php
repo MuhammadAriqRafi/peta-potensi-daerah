@@ -2,26 +2,25 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Controllers\CRUDController;
 use App\Models\Popup;
 use Config\Services;
+use JsonException;
 
-class PopupController extends BaseController
+class PopupController extends CRUDController
 {
-    protected $popup;
-
     public function __construct()
     {
-        $this->popup = new Popup();
+        parent::__construct(new Popup());
     }
 
     public function index()
     {
         $data = [
             'title' => 'Pop Up Manager',
-            'popups' => $this->popup->orderBy('popup_id', 'DESC')->findAll(),
+            'popups' => $this->model->orderBy('popup_id', 'DESC')->findAll(),
             'validation' => Services::validation(),
-            'currentActivePopup' => $this->popup->where('status', 'active')->first(),
+            'currentActivePopup' => $this->model->where('status', 'active')->first(),
             'storeUrl' => '/backend/popups/ajaxStore',
             'indexUrl' => '/backend/popups/ajaxIndex',
             'destroyUrl' => '/backend/popups/ajaxDestroy/',
@@ -77,15 +76,12 @@ class PopupController extends BaseController
     // Ajax Method
     public function ajaxIndex()
     {
-        $popups = $this->popup->findAll();
-        $popups = encodeId($popups, 'popup_id');
-
-        return $this->response->setJSON($popups);
+        return parent::ajaxIndex();
     }
 
     public function ajaxStore()
     {
-        $rules = $this->popup->getPopupValidationRules();
+        $rules = $this->model->getPopupValidationRules();
 
         if (!$this->validate($rules)) {
             return $this->response->setJSON(_validate($rules));
@@ -98,8 +94,8 @@ class PopupController extends BaseController
             'value' => $imageName
         ];
 
-        if ($this->popup->save($data)) {
-            $newPopup = $this->popup->find($this->popup->getInsertID());
+        if ($this->model->save($data)) {
+            $newPopup = $this->model->find($this->model->getInsertID());
             $newPopup['popup_id'] = base64_encode($newPopup['popup_id']);
             $newPopup['actions'] = strtr(editDeleteBtn(false), ['$id' => $newPopup['popup_id']]);
 
@@ -170,19 +166,20 @@ class PopupController extends BaseController
 
     public function ajaxDestroy($id = null)
     {
-        $id = base64_decode($id);
-        $popup = $this->popup->find($id);
-        $message = deleteImage($popup['value'], 'img/', 'Pop Up');
+        $data = [
+            'image_name' => $this->model->find(base64_decode($id))['value'],
+            'image_path' => 'img/',
+            'image_context' => 'Pop Up'
+        ];
 
-        if ($this->popup->delete($id)) {
-            return $this->response->setJSON([
-                'message' => $message,
-                'idDeletedPopup' => base64_encode($id),
-                'isActivePopupExist' => $this->popup->isActivePopupExist()
-            ]);
-        } else {
-            return $this->response->setJSON(['message' => 'Terjadi kesalahan pada server']);
-        }
+        $this->setData($data);
+        $response = parent::ajaxDestroy($id);
+
+        // ? Add isActivePopupExist property to the response
+        $response = json_decode($response, true);
+        $response['isActivePopupExist'] = $this->model->isActivePopupExist();
+        $response = json_encode($response);
+        return $this->response->setJSON($response);
     }
 
     public function ajaxUpdateActivePopup()
@@ -193,7 +190,7 @@ class PopupController extends BaseController
 
         if ($this->request->getVar('oldActivePopup')) {
             $oldActivePopupId = base64_decode($this->request->getVar('oldActivePopup'));
-            $updateOldActivePopup = $this->popup->save([
+            $updateOldActivePopup = $this->model->save([
                 'popup_id' => $oldActivePopupId,
                 'status' => 'non_active'
             ]);
@@ -202,13 +199,13 @@ class PopupController extends BaseController
         }
 
         $newActivePopupId = base64_decode($this->request->getVar('id'));
-        $updateNewActivePopup = $this->popup->save([
+        $updateNewActivePopup = $this->model->save([
             'popup_id' => $newActivePopupId,
             'status' => 'active'
         ]);
 
         if ($updateOldActivePopup && $updateNewActivePopup) {
-            $updatedActivePopup = $this->popup->select('popup_id, value, title')->find($newActivePopupId);
+            $updatedActivePopup = $this->model->select('popup_id, value, title')->find($newActivePopupId);
             $updatedActivePopup['popup_id'] = base64_encode($updatedActivePopup['popup_id']);
 
             return $this->response->setJSON([

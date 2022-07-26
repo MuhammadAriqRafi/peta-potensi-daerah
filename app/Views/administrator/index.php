@@ -1,96 +1,118 @@
 <?= $this->extend('layout/template'); ?>
 
-<?= $this->section('toolbar'); ?>
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-    Tambah Data
-</button>
+<?= $this->section('modal'); ?>
+<!-- Put this part before </body> tag -->
+<input type="checkbox" id="administratorModal" class="modal-toggle" />
+<div class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box sm:p-8">
+        <h3 class="font-bold text-2xl sm:text-4xl mb-6">Tambah Tentang Aplikasi</h3>
 
-<!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Tambah Administrator</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- Popup Form -->
+        <form action="#" id="administratorForm">
+            <?= csrf_field(); ?>
+            <!-- NIK Input -->
+            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
+                <span class="label-text font-bold">NIK</span>
+                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="nik" />
+                <div id="error-nik" class="badge badge-error hidden"></div>
             </div>
-            <form action="<?= route_to('backend.administrators.store'); ?>" method="POST" enctype="multipart/form-data">
-                <?= csrf_field(); ?>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="nik" class="form-label">NIK</label>
-                        <input type="text" class="form-control <?= $validation->hasError('nik') ? 'is-invalid' : ''; ?>" name="nik" value="<?= old('nik'); ?>">
-                        <div class="invalid-feedback">
-                            <?= $validation->getError('nik'); ?>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="nama" class="form-label">Nama</label>
-                        <input type="text" class="form-control <?= $validation->hasError('nama') ? 'is-invalid' : ''; ?>" name="nama" value="<?= old('nama'); ?>">
-                        <div class="invalid-feedback">
-                            <?= $validation->getError('nama'); ?>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control <?= $validation->hasError('username') ? 'is-invalid' : ''; ?>" name="username" value="<?= old('username'); ?>">
-                        <div class="invalid-feedback">
-                            <?= $validation->getError('username'); ?>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control <?= $validation->hasError('password') ? 'is-invalid' : ''; ?>" name="password">
-                        <div class="invalid-feedback">
-                            <?= $validation->getError('password'); ?>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="passconf" class="form-label">Password Confirm</label>
-                        <input type="password" class="form-control <?= $validation->hasError('passconf') ? 'is-invalid' : ''; ?>" name="passconf">
-                        <div class="invalid-feedback">
-                            <?= $validation->getError('passconf'); ?>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                    <button type="submit" class="btn btn-primary">Tambah</button>
-                </div>
-            </form>
-        </div>
+            <!-- Nama Input -->
+            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
+                <span class="label-text font-bold">Nama</span>
+                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="nama" />
+                <div id="error-nama" class="badge badge-error hidden"></div>
+            </div>
+            <!-- Username Input -->
+            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
+                <span class="label-text font-bold">Username</span>
+                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="username" />
+                <div id="error-username" class="badge badge-error hidden"></div>
+            </div>
+            <!-- Password Input -->
+            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
+                <span class="label-text font-bold">Password</span>
+                <input type="password" class="input input-bordered w-full max-w-xs my-2" name="password" />
+                <div id="error-password" class="badge badge-error hidden"></div>
+            </div>
+            <!-- Password Confirm Input -->
+            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
+                <span class="label-text font-bold">Password Confirm</span>
+                <input type="password" class="input input-bordered w-full max-w-xs my-2" name="passconf" />
+                <div id="error-passconf" class="badge badge-error hidden"></div>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="modal-action">
+                <label for="administratorModal" class="btn btn-error">Batal</label>
+                <label class="btn btn-primary" onclick="store()">Tambah</label>
+            </div>
+        </form>
+        <!-- End of Popup Form -->
     </div>
 </div>
+<?= $this->endSection(); ?>
+
+<?= $this->section('toolbar'); ?>
+<!-- The button to open modal -->
+<label for="administratorModal" class="btn modal-button">Tambah Data</label>
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
 
 <div class="overflow-x-auto">
-    <table class="table table-zebra w-full">
+    <table class="table table-zebra w-full" id="administratorTable">
         <thead>
             <th>NIK</th>
             <th>Nama</th>
             <th>Username</th>
             <th>Actions</th>
         </thead>
-        <tbody>
-            <?php foreach ($administrators as $administrator) : ?>
-                <tr>
-                    <td><?= $administrator['nik']; ?></td>
-                    <td><?= $administrator['nama']; ?></td>
-                    <td><?= $administrator['username']; ?></td>
-                    <td>
-                        <form action="<?= route_to('backend.administrators.delete', $administrator['admin_id']); ?>" method="POST">
-                            <?= csrf_field(); ?>
-                            <input type="hidden" name="_method" value="DELETE">
-                            <a href="<?= route_to('backend.administrators.edit', base64_encode($administrator['admin_id'])); ?>" class="btn btn-sm btn-outline-warning">Edit</a>
-                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah anda yakin?')">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            <?php endforeach ?>
-        </tbody>
     </table>
 </div>
+<?= $this->endSection(); ?>
+
+<?= $this->section('script'); ?>
+<script src="<?= base_url('js/ajaxUtilities.js'); ?>"></script>
+<script>
+    // Helper
+    const displayError = (inputError) => {
+        inputError.forEach(error => {
+            const input = $(`[name=${error.input_name}]`);
+
+            $(`#error-${error.input_name}`).removeClass('hidden');
+            $(`#error-${error.input_name}`).text(error.error_message);
+            input.addClass('input-error');
+        });
+    }
+
+    // CRUD
+    const store = () => {
+        const url = siteUrl + '<?= $storeUrl; ?>';
+        const form = $('#administratorForm')[0];
+        const data = new FormData(form);
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            processData: false,
+            contentType: false,
+            dataType: "json",
+            success: function(response) {
+                console.log(response);
+                if (response.status) {
+                    alert(response.message);
+                    $('administratorForm').trigger('reset');
+                } else {
+                    if (response.input_error) displayError(response.input_error);
+                }
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        const table = createDataTable('administratorTable', siteUrl + '<?= $indexUrl; ?>');
+    });
+</script>
 <?= $this->endSection(); ?>

@@ -9,7 +9,7 @@
 
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
-<table class="table" id="mapTable">
+<table class="table table-zebra w-full" id="mapTable">
     <thead>
         <tr>
             <th>Title</th>

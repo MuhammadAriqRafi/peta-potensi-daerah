@@ -180,7 +180,22 @@
 
     $(document).ready(function() {
         // ? DataTables
-        var table = createDataTable('profileTable', siteUrl + '<?= $indexUrl; ?>');
+        const table = createDataTable('profileTable', siteUrl + '<?= $indexUrl; ?>', [{
+                data: 0
+            },
+            {
+                data: 1
+            },
+            {
+                data: 2
+            },
+            {
+                data: 3
+            },
+            {
+                data: 4
+            },
+        ]);
     });
 </script>
 <?= $this->endSection(); ?>

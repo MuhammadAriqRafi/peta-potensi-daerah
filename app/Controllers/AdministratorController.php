@@ -2,25 +2,25 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Controllers\CRUDController;
 use App\Models\Administrator;
 use Config\Services;
 
-class AdministratorController extends BaseController
+class AdministratorController extends CRUDController
 {
-    protected $administrators;
-
     public function __construct()
     {
-        $this->administrators = new Administrator();
+        parent::__construct(new Administrator());
     }
 
     public function index()
     {
         $data = [
             'title' => 'Administrators',
-            'administrators' => $this->administrators->getAdmins(),
-            'validation' => Services::validation()
+            'administrators' => $this->model->getAdmins(),
+            'validation' => Services::validation(),
+            'storeUrl' => '/backend/administrators/ajaxStore',
+            'indexUrl' => '/backend/administrators/ajaxIndex',
         ];
 
         return view('administrator/index', $data);
@@ -86,5 +86,25 @@ class AdministratorController extends BaseController
     {
         $this->administrators->delete($id);
         return redirect()->back()->with('success', 'Administrator berhasil dihapus!');
+    }
+
+    // Ajax Methods
+    public function ajaxIndex()
+    {
+        return parent::ajaxIndex();
+    }
+
+    public function ajaxStore()
+    {
+        $data = [
+            'nik' => $this->request->getVar('nik'),
+            'nama' => $this->request->getVar('nama'),
+            'username' => $this->request->getVar('username'),
+            'password' => $this->request->getVar('password')
+        ];
+
+        $this->setData($data);
+        $this->setReturnRecentStoredData(true);
+        return parent::ajaxStore();
     }
 }
