@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 
 class CRUDController extends BaseController
 {
+    // TODO: store and update method more or less similar, consider merging them in one method
     protected object $model;
     protected bool $returnRecentStoredData = false;
     protected array $data = [];
@@ -104,7 +105,7 @@ class CRUDController extends BaseController
     {
         $id = base64_decode($id);
         if ($this->data) $message = deleteImage($this->data['image_name'], $this->data['image_path'], $this->data['image_context']);
-        else $message = $this->model->table . 'berhasil dihapus';
+        else $message = ucfirst($this->model->table) . ' berhasil dihapus';
 
         if ($this->model->delete($id)) {
             $this->resetClassProperty();
@@ -115,5 +116,38 @@ class CRUDController extends BaseController
         } else {
             return $this->response->setJSON(['message' => 'Terjadi kesalahan pada server']);
         }
+    }
+
+    protected function ajaxEdit($id = null)
+    {
+        $data = $this->model->find(base64_decode($id));
+        return $this->response->setJSON($data);
+    }
+
+    protected function ajaxUpdate($id = null)
+    {
+        // ? Validation
+        $rules = $this->model->fetchValidationRules();
+
+        if (!$this->validate($rules)) {
+            return $this->response->setJSON(_validate($rules));
+        }
+
+        // ? Preparing response
+        $response = [
+            'status' => true,
+            'message' => ucfirst($this->model->table) . ' berhasil ditambahkan'
+        ];
+
+        // ? Updating data
+        if ($this->administrators->save($this->data)) {
+            $this->resetClassProperty();
+            return $this->response->setJSON($response);
+        } else {
+            $response['status'] = false;
+            $response['message'] = 'gagal ditambahkan';
+
+            return $this->response->setJSON($response);
+        };
     }
 }

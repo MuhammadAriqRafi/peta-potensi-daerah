@@ -13,8 +13,8 @@ const urlFormatter = (url, id = null, context = null) => {
 
 const editDeleteBtn = (id = null) => {
     return `
-    <a href="#" class="btn btn-sm btn-outline-warning" onclick="update('${id}')">Edit</a>
-    <a href="#" class="btn btn-sm btn-outline-danger" onclick="destroy('${id}')">Delete</a>`
+    <a href="#" class="btn btn-sm btn-secondary" onclick="edit('${id}')">Edit</a>
+    <a href="#" class="btn btn-sm btn-error" onclick="destroy('${id}')">Delete</a>`
 }
 
 const reload = (formId) => {

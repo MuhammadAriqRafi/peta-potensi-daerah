@@ -54,7 +54,7 @@
 
 <?= $this->section('toolbar'); ?>
 <!-- The button to open modal -->
-<label for="administratorModal" class="btn modal-button">Tambah Data</label>
+<label for="administratorModal" class="btn modal-button" onclick="create()">Tambah Data</label>
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
@@ -75,6 +75,8 @@
 <?= $this->section('script'); ?>
 <script src="<?= base_url('js/ajaxUtilities.js'); ?>"></script>
 <script>
+    const tableId = 'administratorTable';
+
     // Helper
     const displayError = (inputError) => {
         inputError.forEach(error => {
@@ -87,6 +89,12 @@
     }
 
     // CRUD
+    const create = () => {
+        $('[name="nik"]').val('');
+        $('[name="nama"]').val('');
+        $('[name="username"]').val('');
+    }
+
     const store = () => {
         const url = siteUrl + '<?= $storeUrl; ?>';
         const form = $('#administratorForm')[0];
@@ -104,6 +112,7 @@
                 if (response.status) {
                     alert(response.message);
                     $('administratorForm').trigger('reset');
+                    reload(tableId);
                 } else {
                     if (response.input_error) displayError(response.input_error);
                 }
@@ -111,8 +120,55 @@
         });
     }
 
+    const edit = (id) => {
+        const url = siteUrl + '<?= $editUrl ?>' + id;
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            dataType: "json",
+            success: function(response) {
+                console.log(response);
+                $('[name="nik"]').val(response.nik);
+                $('[name="nama"]').val(response.nama);
+                $('[name="username"]').val(response.username);
+                $('#administratorModal').prop('checked', true);
+            }
+        });
+    }
+
+    const destroy = (id) => {
+        const url = siteUrl + '<?= $destroyUrl ?>' + id;
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            dataType: "json",
+            success: function(response) {
+                console.log(response);
+                alert(response.message);
+                reload(tableId);
+            }
+        });
+    }
+
     $(document).ready(function() {
-        const table = createDataTable('administratorTable', siteUrl + '<?= $indexUrl; ?>');
+        const table = createDataTable('administratorTable', siteUrl + '<?= $indexUrl; ?>', [{
+                data: 'nik'
+            },
+            {
+                data: 'nama'
+            },
+            {
+                data: 'username'
+            },
+            {
+                data: 'admin_id',
+                render: function(data) {
+                    return editDeleteBtn(data);
+                }
+            },
+        ]);
     });
 </script>
 <?= $this->endSection(); ?>

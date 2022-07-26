@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use App\Controllers\Interfaces\CRUDInterface;
 use App\Controllers\Interfaces\DatatableInterface;
 use CodeIgniter\Model;
 
-class Administrator extends Model implements DatatableInterface
+class Administrator extends Model implements DatatableInterface, CRUDInterface
 {
     protected $DBGroup          = 'default';
     protected $table            = 'administrators';

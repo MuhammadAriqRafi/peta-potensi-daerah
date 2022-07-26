@@ -56,7 +56,7 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
 
     // Administrators Routes
     $routes->group('administrators', function ($routes) {
-        $routes->get('/', 'AdministratorController::index');
+        $routes->get('/', 'AdministratorController::index', ['as' => 'backend.administrators.index']);
         $routes->get('(:any)', 'AdministratorController::$1');
         $routes->post('(:any)', 'AdministratorController::$1');
         $routes->patch('(:any)', 'AdministratorController::$1');
@@ -65,7 +65,6 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
         // $routes->post('/', 'AdministratorController::store', ['as' => 'backend.administrators.store']);
         // $routes->get('(:any)/edit', 'AdministratorController::edit/$1', ['as' => 'backend.administrators.edit']);
         // $routes->patch('(:any)', 'AdministratorController::update/$1', ['as' => 'backend.administrators.update']);
-        // $routes->delete('(:any)', 'AdministratorController::destroy/$1', ['as' => 'backend.administrators.delete']);
     });
 
     // Guestbooks Routes

@@ -316,10 +316,7 @@
             {
                 data: 'popup_id',
                 render: function(data) {
-                    return `
-                        <button class="btn btn-sm btn-secondary" onclick="edit('${data}')">Ubah</button>
-                        <button class="btn btn-sm btn-error" onclick="destroy('${data}')">Hapus</button>
-                    `;
+                    return editDeleteBtn(data);
                 }
             },
             {

@@ -18,9 +18,10 @@ class AdministratorController extends CRUDController
         $data = [
             'title' => 'Administrators',
             'administrators' => $this->model->getAdmins(),
-            'validation' => Services::validation(),
             'storeUrl' => '/backend/administrators/ajaxStore',
             'indexUrl' => '/backend/administrators/ajaxIndex',
+            'destroyUrl' => '/backend/administrators/ajaxDestroy/',
+            'editUrl' => '/backend/administrators/ajaxEdit/'
         ];
 
         return view('administrator/index', $data);
@@ -82,12 +83,6 @@ class AdministratorController extends CRUDController
         return redirect()->back()->with('success', 'Administrator berhasil diubah!');
     }
 
-    public function destroy($id = null)
-    {
-        $this->administrators->delete($id);
-        return redirect()->back()->with('success', 'Administrator berhasil dihapus!');
-    }
-
     // Ajax Methods
     public function ajaxIndex()
     {
@@ -106,5 +101,32 @@ class AdministratorController extends CRUDController
         $this->setData($data);
         $this->setReturnRecentStoredData(true);
         return parent::ajaxStore();
+    }
+
+    public function ajaxDestroy($id = null)
+    {
+        return parent::ajaxDestroy($id);
+    }
+
+    public function ajaxEdit($id = null)
+    {
+        return parent::ajaxEdit($id);
+    }
+
+    public function ajaxUpdate($id = null)
+    {
+        $id = base64_decode($id);
+
+        $data = [
+            'admin_id' => $id,
+            'nik' => $this->request->getVar('nik'),
+            'nama' => $this->request->getVar('nama'),
+            'username' => $this->request->getVar('username'),
+            'password' => $this->request->getVar('password')
+        ];
+
+        $this->setData($data);
+
+        return parent::ajaxUpdate($id);
     }
 }
