@@ -39,7 +39,7 @@ class Administrator extends Model implements DatatableInterface, CRUDInterface
     public function fetchValidationRules(): array
     {
         return $rules = [
-            'nik' => 'required|is_unique[administrators.nik]',
+            'nik' => 'required|is_unique[administrators.nik,admin_id,{id}]',
             'nama' => 'required',
             'username' => 'required',
             'password' => 'required',
@@ -47,10 +47,10 @@ class Administrator extends Model implements DatatableInterface, CRUDInterface
         ];
     }
 
-    public function getRecords($start, $length)
+    public function getRecords($start, $length, $orderColumn, $orderDirection)
     {
         return $this->select('nik, nama, username, admin_id')
-            ->orderBy('admin_id', 'DESC')
+            ->orderBy($orderColumn, $orderDirection)
             ->findAll($length, $start);
     }
 
@@ -59,9 +59,9 @@ class Administrator extends Model implements DatatableInterface, CRUDInterface
         return $this->countAllResults() ?? 0;
     }
 
-    public function getRecordSearch($search, $start, $length)
+    public function getRecordSearch($search, $start, $length, $orderColumn, $orderDirection)
     {
-        return $this->orderBy('admin_id', 'DESC')
+        return $this->orderBy($orderColumn, $orderDirection)
             ->like('nik', $search)
             ->orLike('nama', $search)
             ->orLike('username', $search)

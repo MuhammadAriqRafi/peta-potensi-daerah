@@ -41,6 +41,9 @@ class CRUDController extends BaseController
         $start = $this->request->getVar('start');
         $length = $this->request->getVar('length');
         $search = $this->request->getVar('search')['value'];
+        $orderDirection = $this->request->getVar('order')[0]['dir'];
+        $orderColumnIndex = $this->request->getVar('order')[0]['column'];
+        $orderColumn = $this->request->getVar('columns')[$orderColumnIndex]['name'];
         $total = $this->model->getTotalRecords();
 
         // ? Preparing response
@@ -48,18 +51,15 @@ class CRUDController extends BaseController
             'length' => $length,
             'draw' => $draw,
             'recordsTotal' => $total,
-            'recordsFiltered' => $total,
+            'recordsFiltered' => $total
         ];
 
         // ? If client search something
         if ($search != '') {
-            $list = $this->model->getRecordSearch($search, $start, $length);
+            $list = $this->model->getRecordSearch($search, $start, $length, $orderColumn, $orderDirection);
             $total_search = $this->model->getTotalRecordSearch($search);
-            $response = [
-                'recordsTotal' => $total_search,
-                'recordsFiltered' => $total_search
-            ];
-        } else $list = $this->model->getRecords($start, $length);
+            $response['recordsFiltered'] = $total_search;
+        } else $list = $this->model->getRecords($start, $length, $orderColumn, $orderDirection);
 
         // ? Encode id
         foreach ($list as $key => $value) {
@@ -83,14 +83,24 @@ class CRUDController extends BaseController
         // ? Preparing response
         $response = [
             'status' => true,
-            'message' => 'berhasil ditambahkan'
+            'message' => ucfirst($this->model->table) . ' berhasil ditambahkan'
         ];
+
+        // ? Check if any image needs to be stored
+        // ? Always put the field for the image in the first index of data variable
+        if (array_key_exists('image_file', $this->data)) {
+            $this->data[array_key_first($this->data)] = storeAs($this->data['image_file'], $this->data['image_path'], $this->data['image_context']);
+            unset($this->data['image_file']);
+            unset($this->data['image_path']);
+            unset($this->data['image_context']);
+        }
 
         // ? Saving data
         if ($this->model->save($this->data)) {
             if ($this->returnRecentStoredData) {
                 $response['data'] = $this->model->find($this->model->getInsertID());
             }
+            $response['data'] = $this->data;
             $this->resetClassProperty();
             return $this->response->setJSON($response);
         } else {
@@ -109,10 +119,7 @@ class CRUDController extends BaseController
 
         if ($this->model->delete($id)) {
             $this->resetClassProperty();
-            return json_encode([
-                'message' => $message,
-                'idDeletedPopup' => base64_encode($id)
-            ]);
+            return ['message' => $message];
         } else {
             return $this->response->setJSON(['message' => 'Terjadi kesalahan pada server']);
         }
@@ -121,6 +128,7 @@ class CRUDController extends BaseController
     protected function ajaxEdit($id = null)
     {
         $data = $this->model->find(base64_decode($id));
+        $data[$this->model->primaryKey] = base64_encode($data[$this->model->primaryKey]);
         return $this->response->setJSON($data);
     }
 
@@ -136,16 +144,16 @@ class CRUDController extends BaseController
         // ? Preparing response
         $response = [
             'status' => true,
-            'message' => ucfirst($this->model->table) . ' berhasil ditambahkan'
+            'message' => ucfirst($this->model->table) . ' berhasil diubah',
         ];
 
         // ? Updating data
-        if ($this->administrators->save($this->data)) {
+        if ($this->model->save($this->data)) {
             $this->resetClassProperty();
             return $this->response->setJSON($response);
         } else {
             $response['status'] = false;
-            $response['message'] = 'gagal ditambahkan';
+            $response['message'] = 'gagal diubah';
 
             return $this->response->setJSON($response);
         };

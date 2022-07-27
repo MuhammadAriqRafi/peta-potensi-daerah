@@ -29,7 +29,7 @@
             <!-- Modal Action Buttons -->
             <div class="modal-action">
                 <label for="popupModal" class="btn btn-error">Batal</label>
-                <label class="btn btn-primary" onclick="save()">Tambah</label>
+                <label id="popupFormActionBtn" class="btn btn-primary" onclick="save()">Tambah</label>
             </div>
         </form>
         <!-- End of Popup Form -->
@@ -81,6 +81,12 @@
 <?= $this->section('script'); ?>
 <script src="<?= base_url('js/ajaxUtilities.js'); ?>"></script>
 <script>
+    const tableId = 'popupTable';
+    const popupForm = 'popupForm';
+    const popupModal = 'popupModal';
+    const popupModalLabel = 'popupModalLabel';
+    const popupFormActionBtn = 'popupFormActionBtn';
+
     // Helper
     const createNewPopupSelectOption = (id, title, status) => {
         return `<option value="${id}" ${status == 'active' ? 'selected': ''}>${title}</option>`;
@@ -112,15 +118,15 @@
     }
 
     const resetForm = () => {
-        $('#popupForm').trigger('reset');
+        $(`#${popupForm}`).trigger('reset');
         $(`[name="image"]`).prev().attr('src', '');
     }
 
     // TODO: Update still need fixing
     // CRUD
     const create = () => {
-        $('#popupModalLabel').text('Tambah Pop Up');
-        $('.modal-action .btn-primary').text('Tambah');
+        $(`#${popupModalLabel}`).text('Tambah Pop Up');
+        $(`#${popupFormActionBtn}`).text('Tambah');
 
         if (isPopupFormInUpdateState()) {
             $('input[name="title"]').val('');
@@ -141,17 +147,11 @@
             contentType: false,
             dataType: "json",
             success: function(response) {
+                console.log(response);
                 if (response.status) {
                     alert(response.message);
-                    $('tbody').prepend(`
-                        <tr id="${response.data.popup_id}">
-                            <td>${response.data.title}</td>
-                            <td>${response.data.value}</td>
-                            <td>${response.data.actions ?? '-'}</td>
-                        </tr>
-                        `);
+                    reload(tableId);
                     resetForm();
-                    $('select[name="id"]').prepend(createNewPopupSelectOption(response.data.popup_id, response.data.title, response.data.status));
                 } else {
                     displayError(response.input_error);
                 }
@@ -160,7 +160,7 @@
     }
 
     const destroy = (id) => {
-        if (confirm('apakah anda yakin?')) {
+        if (confirm('Apakah anda yakin?')) {
             const url = siteUrl + '<?= $destroyUrl; ?>' + id;
             const oldActivePopupInput = $('input[name="oldActivePopup"]');
 
@@ -172,13 +172,10 @@
                 },
                 dataType: "json",
                 success: function(response) {
-                    console.log(response);
-                    $(`option[value="${id}"]`).remove();
-
                     // ? Delete the pop up active option for the deleted popup and reset the previewImg
                     if (id == oldActivePopupInput.val()) {
-                        $('#activePopupImage').attr('src', '#');
                         oldActivePopupInput.val('');
+                        $('#activePopupImage').attr('src', '#');
                     }
 
                     // ? Informing if there is no any active popup
@@ -187,7 +184,8 @@
                     }
 
                     alert(response.message);
-                    $(`tr[id="${response.idDeletedPopup}"]`).remove();
+                    reload(tableId);
+                    // TODO: After deleting, the deleted option in select input is not removed, because when datatable reloads, the option for the deleted record still remain, need fixing
                 }
             });
         }
@@ -202,26 +200,24 @@
             dataType: "json",
             success: function(response) {
                 // ? Reset the form
-                $('#popupForm').find('.badge-error').text('');
-                $('#popupForm').find('.badge-error').addClass('hidden');
-                $('#popupForm').find('.input-error').removeClass('input-error');
+                resetInvalidClass($(`#${popupForm}`));
 
                 $('[name="title"]').val(response.title);
                 $('[name="image"]').prev().attr('src', baseUrl + `/img/${response.value}`);
 
                 if (!isPopupFormInUpdateState()) {
-                    $('#popupForm').prepend(`
-                    <input type="hidden" name="oldImage" value="${response.value}">
+                    $(`#${popupForm}`).prepend(`
                     <input type="hidden" name="id" value="${response.popup_id}">
+                    <input type="hidden" name="oldImage" value="${response.value}">
                 `);
                 } else {
-                    $('input[name="oldImage"]').val(response.value);
                     $('input[name="id"]').val(response.popup_id);
+                    $('input[name="oldImage"]').val(response.value);
                 };
 
-                $('#popupModalLabel').text('Ubah Pop Up');
-                $('.modal-action .btn-primary').text('Ubah');
-                $('#popupModal').prop('checked', true);
+                $(`#${popupModalLabel}`).text('Ubah Pop Up');
+                $(`#${popupFormActionBtn}`).text('Ubah');
+                $(`#${popupModal}`).prop('checked', true);
             }
         });
     }
@@ -251,7 +247,7 @@
                     }
 
                     resetForm();
-                    $('#popupModal').prop('checked', false);
+                    $(`#${popupModal}`).prop('checked', false);
                 } else {
                     if (response.input_error) {
                         displayError(response.input_error);
@@ -274,6 +270,7 @@
         }
     }
 
+    // Active Popup
     const updateActivePopup = () => {
         const url = siteUrl + '<?= $updateActivePopupUrl; ?>';
         const form = $('#updateActivePopupForm')[0];
@@ -289,7 +286,7 @@
             success: function(response) {
                 if (response.status) {
                     alert(response.message);
-                    $(`option[value="${response.data.popup_id}"]`).attr('selected', 'selected');
+                    $(`option[value="${response.data.popup_id}"]`).prop('selected', true);
                     $('#activePopupImage').attr('src', baseUrl + `/img/${response.data.value}`);
                     $('[name="oldActivePopup"]').val(response.data.popup_id);
 
@@ -297,23 +294,24 @@
                         $('select[name="id"]').prev().text('Pop Up Active');
                     }
                 } else {
-                    if (response.input_error) {
-                        displayError(response.input_error);
-                    }
+                    if (response.input_error) displayError(response.input_error);
                 }
             }
         });
     }
 
     $(document).ready(function() {
-        // TODO: Implement server side functionality to the datatable
-        const table = createDataTable('popupTable', siteUrl + '<?= $indexUrl; ?>', [{
+        const table = createDataTable(tableId, siteUrl + '<?= $indexUrl; ?>', [{
+                name: 'title',
                 data: 'title'
             },
             {
+                name: 'value',
                 data: 'value'
             },
             {
+                searchable: false,
+                orderable: false,
                 data: 'popup_id',
                 render: function(data) {
                     return editDeleteBtn(data);
@@ -323,13 +321,18 @@
                 data: 'status',
                 visible: false,
                 searchable: false,
-                render: function(data, type, row) {
-                    $(`select[name="id"]`).prepend(createNewPopupSelectOption(row.popup_id, row.title, row.status));
+                orderable: false,
 
-                    if (row.status == 'active') {
-                        $('select[name="id"]').prev().text('Pop Up Active');
-                        $('input[name="oldActivePopup"]').val(row.popup_id);
-                        $('#activePopupImage').attr('src', baseUrl + `/img/${row.value}`);
+                render: function(data, type, row) {
+
+                    if ($(`option[value="${row.popup_id}"]`).length < 1) {
+                        $(`select[name="id"]`).prepend(createNewPopupSelectOption(row.popup_id, row.title, row.status));
+
+                        if (row.status == 'active') {
+                            $('select[name="id"]').prev().text('Pop Up Active');
+                            $('input[name="oldActivePopup"]').val(row.popup_id);
+                            $('#activePopupImage').attr('src', baseUrl + `/img/${row.value}`);
+                        }
                     }
 
                     return true;

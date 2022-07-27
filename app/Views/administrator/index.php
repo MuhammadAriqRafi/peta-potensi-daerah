@@ -5,7 +5,7 @@
 <input type="checkbox" id="administratorModal" class="modal-toggle" />
 <div class="modal modal-bottom sm:modal-middle">
     <div class="modal-box sm:p-8">
-        <h3 class="font-bold text-2xl sm:text-4xl mb-6">Tambah Tentang Aplikasi</h3>
+        <h3 id="administratorModalLabel" class="font-bold text-2xl sm:text-4xl mb-6"></h3>
 
         <!-- Popup Form -->
         <form action="#" id="administratorForm">
@@ -44,7 +44,7 @@
             <!-- Modal Action Buttons -->
             <div class="modal-action">
                 <label for="administratorModal" class="btn btn-error">Batal</label>
-                <label class="btn btn-primary" onclick="store()">Tambah</label>
+                <label id="administratorFormActionBtn" class="btn btn-primary" onclick="save()"></label>
             </div>
         </form>
         <!-- End of Popup Form -->
@@ -76,6 +76,9 @@
 <script src="<?= base_url('js/ajaxUtilities.js'); ?>"></script>
 <script>
     const tableId = 'administratorTable';
+    const administratorForm = 'administratorForm';
+    const administratorModalLabel = 'administratorModalLabel';
+    const administratorFormActionBtn = 'administratorFormActionBtn';
 
     // Helper
     const displayError = (inputError) => {
@@ -88,17 +91,28 @@
         });
     }
 
+    const isPopupFormInUpdateState = () => {
+        if ($('input[name="id"]').length > 0) return true;
+        return false;
+    }
+
     // CRUD
     const create = () => {
         $('[name="nik"]').val('');
         $('[name="nama"]').val('');
         $('[name="username"]').val('');
+
+        resetInvalidClass($(`#${administratorForm}`));
+        if (isPopupFormInUpdateState()) {
+            $('input[name="id"]').remove();
+        }
+
+        $(`#${administratorModalLabel}`).text('Tambah Administrator');
+        $(`#${administratorFormActionBtn}`).text('Tambah');
     }
 
-    const store = () => {
+    const store = (data) => {
         const url = siteUrl + '<?= $storeUrl; ?>';
-        const form = $('#administratorForm')[0];
-        const data = new FormData(form);
 
         $.ajax({
             type: "POST",
@@ -108,11 +122,10 @@
             contentType: false,
             dataType: "json",
             success: function(response) {
-                console.log(response);
                 if (response.status) {
                     alert(response.message);
-                    $('administratorForm').trigger('reset');
                     reload(tableId);
+                    $('administratorForm').trigger('reset');
                 } else {
                     if (response.input_error) displayError(response.input_error);
                 }
@@ -128,41 +141,93 @@
             url: url,
             dataType: "json",
             success: function(response) {
-                console.log(response);
+                resetInvalidClass($(`#${administratorForm}`));
                 $('[name="nik"]').val(response.nik);
                 $('[name="nama"]').val(response.nama);
                 $('[name="username"]').val(response.username);
+
+                if (isPopupFormInUpdateState()) {
+                    $('input[name="id"]').val(response.admin_id);
+                } else {
+                    $(`#${administratorForm}`).prepend(`<input type="hidden" name="id" value="${response.admin_id}">`);
+                    $('input[name="id"]').val(response.admin_id);
+                }
+
+                $(`#${administratorFormActionBtn}`).text('Ubah');
+                $(`#${administratorModalLabel}`).text('Ubah Administrator');
                 $('#administratorModal').prop('checked', true);
             }
         });
     }
 
-    const destroy = (id) => {
-        const url = siteUrl + '<?= $destroyUrl ?>' + id;
+    const update = (id, data) => {
+        const url = siteUrl + '<?= $updateUrl; ?>' + id;
+        data.append('_method', 'PATCH');
+        data.set('id', atob(id));
 
         $.ajax({
             type: "POST",
             url: url,
+            data: data,
+            processData: false,
+            contentType: false,
             dataType: "json",
             success: function(response) {
                 console.log(response);
-                alert(response.message);
-                reload(tableId);
+                if (response.status) {
+                    alert(response.message);
+                    reload(tableId);
+                    $(`#${administratorForm}`).trigger('reset');
+                } else {
+                    if (response.input_error) displayError(response.input_error);
+                }
             }
         });
     }
 
+    const destroy = (id) => {
+        if (confirm('Apakah anda yakin?')) {
+            const url = siteUrl + '<?= $destroyUrl ?>' + id;
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                dataType: "json",
+                success: function(response) {
+                    console.log(response);
+                    alert(response.message);
+                    reload(tableId);
+                }
+            });
+        }
+    }
+
+    const save = () => {
+        const form = $(`#${administratorForm}`)[0];
+        const data = new FormData(form);
+
+        if (isPopupFormInUpdateState()) {
+            const id = $('input[name="id"]').val();
+            update(id, data);
+        } else store(data);
+    }
+
     $(document).ready(function() {
         const table = createDataTable('administratorTable', siteUrl + '<?= $indexUrl; ?>', [{
+                name: 'nik',
                 data: 'nik'
             },
             {
+                name: 'nama',
                 data: 'nama'
             },
             {
+                name: 'username',
                 data: 'username'
             },
             {
+                searchable: false,
+                orderable: false,
                 data: 'admin_id',
                 render: function(data) {
                     return editDeleteBtn(data);

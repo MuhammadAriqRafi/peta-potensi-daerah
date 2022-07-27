@@ -5,7 +5,6 @@ namespace App\Controllers;
 use App\Controllers\CRUDController;
 use App\Models\Popup;
 use Config\Services;
-use JsonException;
 
 class PopupController extends CRUDController
 {
@@ -78,50 +77,26 @@ class PopupController extends CRUDController
     {
         return parent::ajaxIndex();
     }
-
     public function ajaxStore()
     {
-        $rules = $this->model->getPopupValidationRules();
-
-        if (!$this->validate($rules)) {
-            return $this->response->setJSON(_validate($rules));
-        }
-
-        $imageName = storeAs($this->request->getFile('image'), 'img', 'popup');
-
         $data = [
+            'value' => '',
             'title' => $this->request->getVar('title'),
-            'value' => $imageName
+            'image_file' => $this->request->getFile('image'),
+            'image_path' => 'img/',
+            'image_context' => 'popup'
         ];
 
-        if ($this->model->save($data)) {
-            $newPopup = $this->model->find($this->model->getInsertID());
-            $newPopup['popup_id'] = base64_encode($newPopup['popup_id']);
-            $newPopup['actions'] = strtr(editDeleteBtn(false), ['$id' => $newPopup['popup_id']]);
-
-            return $this->response->setJSON([
-                'status' => true,
-                'message' => 'Popup berhasil ditambahkan',
-                'data' => $newPopup
-            ]);
-        } else {
-            return $this->response->setJSON([
-                'status' => false,
-                'message' => 'Popup gagal ditambahkan'
-            ]);
-        }
+        $this->setData($data);
+        return parent::ajaxStore();
     }
 
     public function ajaxEdit($id = null)
     {
-        $id = base64_decode($id);
-        $popup = $this->popup->select('title, value, popup_id')->find($id);
-        $popup['popup_id'] = base64_encode($popup['popup_id']);
-
-        return $this->response->setJSON($popup);
+        return parent::ajaxEdit($id);
     }
 
-    public function ajaxUpdate()
+    public function ajaxUpdate($id = null)
     {
         $rules = $this->popup->getPopupValidationRules();
         $rules['image']['rules'] = str_replace('uploaded[image]|', '', $rules['image']['rules']);
@@ -174,11 +149,7 @@ class PopupController extends CRUDController
 
         $this->setData($data);
         $response = parent::ajaxDestroy($id);
-
-        // ? Add isActivePopupExist property to the response
-        $response = json_decode($response, true);
         $response['isActivePopupExist'] = $this->model->isActivePopupExist();
-        $response = json_encode($response);
         return $this->response->setJSON($response);
     }
 
