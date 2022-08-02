@@ -2,58 +2,52 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Controllers\CRUDController;
 use App\Models\Menu;
 use Config\Services;
 
-class MenuController extends BaseController
+class MenuController extends CRUDController
 {
-    protected $menus;
-
     public function __construct()
     {
-        $this->menus = new Menu();
+        parent::__construct(new Menu());
     }
 
     public function index()
     {
         $data = [
             'title' => 'Menu',
-            'menus' => $this->menus->select('title, url, target, menu_id')->orderBy('menu_id', 'DESC')->findAll(),
+            'menus' => $this->model->select('title, url, target, menu_id')->orderBy('menu_id', 'DESC')->findAll(),
             'validation' => Services::validation(),
             'targets' => [
                 'Self' => '_self',
                 'Blank' => '_blank'
-            ]
+            ],
+            'storeUrl' => '/backend/menus/ajaxStore',
+            'editUrl' => '/backend/menus/ajaxEdit/',
+            'updateUrl' => '/backend/menus/ajaxUpdate/',
+            'destroyUrl' => '/backend/menus/ajaxDestroy/',
         ];
+
+        foreach ($data['menus'] as $key => $menu) {
+            $data['menus'][$key]['menu_id'] = base64_encode($menu['menu_id']);
+        }
 
         return view('menu/index', $data);
     }
 
     // Ajax Methods
-    public function ajaxShow()
+    public function ajaxEdit($id = null)
     {
-        $id = base64_decode($this->request->getVar('id'));
-        $menu = $this->menus->select('title, url, target, menu_id')->find($id);
-
-        // ? Encode menu_id
-        foreach ($menu as $key => $value) {
-            if ($key == 'menu_id') $menu[$key] = (string)base64_encode($value);
-        }
-
-        return $this->response->setJSON($menu);
+        $this->data['select'] = ['title', 'url', 'target', 'menu_id'];
+        return parent::ajaxEdit($id);
     }
 
     public function ajaxUpdate($id = null)
     {
-        $rules = $this->menus->getMenuValidationRules();
-
-        if (!$this->validate($rules)) {
-            return $this->response->setJSON(_validate($rules));
-        }
-
+        // ? Decode $id
         $id = base64_decode($id);
-        $menu = $this->menus->find($id);
+
         $data = [
             'menu_id' => $id,
             'title' => $this->request->getVar('title'),
@@ -61,47 +55,28 @@ class MenuController extends BaseController
             'target' => $this->request->getVar('target')
         ];
 
-        if ($this->menus->save($data)) {
-            $menu = $this->menus->select('title, url, target')->find($id);
+        $this->setData($data);
+        $this->setReturnRecentStoredData(true);
 
-            return $this->response->setJSON([
-                'status' => true,
-                'message' => 'Menu berhasil diubah!',
-                'data' => $menu
-            ]);
-        } else {
-            return $this->response->setJSON([
-                'status' => false,
-                'message' => 'Menu gagal diubah!',
-            ]);
-        }
+        return parent::ajaxUpdate($id);
     }
 
     public function ajaxStore()
     {
-        $rules = $this->menus->getMenuValidationRules();
-
-        if (!$this->validate($rules)) {
-            return $this->response->setJSON(_validate($rules));
-        }
-
         $data = [
             'title' => $this->request->getVar('title'),
             'url' => $this->request->getVar('url'),
             'target' => $this->request->getVar('target')
         ];
 
-        if ($newMenu = $this->menus->save($data)) {
-            return $this->response->setJSON([
-                'status' => true,
-                'message' => 'Menu berhasil ditambahkan',
-                'data' => $this->menus->find($this->menus->getInsertID())
-            ]);
-        } else {
-            return $this->response->setJSON([
-                'status' => false,
-                'message' => 'Menu gagal ditambahkan'
-            ]);
-        }
+        $this->setData($data);
+        $this->setReturnRecentStoredData(true);
+
+        return parent::ajaxStore();
+    }
+
+    public function ajaxDestroy($id = null)
+    {
+        return $this->response->setJSON(parent::ajaxDestroy($id));
     }
 }

@@ -92,9 +92,13 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
     // Menu Manager Routes
     $routes->group('menus', function ($routes) {
         $routes->get('/', 'MenuController::index', ['as' => 'backend.menus.index']);
-        $routes->post('/', 'MenuController::ajaxStore', ['as' => 'backend.menus.store.ajax']);
-        $routes->post('edit', 'MenuController::ajaxShow', ['as' => 'backend.menus.show.ajax']);
-        $routes->patch('(:any)', 'MenuController::ajaxUpdate/$1', ['as' => 'backend.menus.update.ajax']);
+        $routes->get('(:any)', 'MenuController::$1');
+        $routes->post('(:any)', 'MenuController::$1');
+        $routes->patch('(:any)', 'MenuController::$1');
+        $routes->delete('(:any)', 'MenuController::$1');
+        // $routes->post('/', 'MenuController::ajaxStore', ['as' => 'backend.menus.store.ajax']);
+        // $routes->post('edit', 'MenuController::ajaxShow', ['as' => 'backend.menus.show.ajax']);
+        // $routes->patch('(:any)', 'MenuController::ajaxUpdate/$1', ['as' => 'backend.menus.update.ajax']);
     });
 
     // Posts Routes

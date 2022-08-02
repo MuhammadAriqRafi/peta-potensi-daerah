@@ -3,60 +3,59 @@
 <?= $this->section('content'); ?>
 <?= $this->include('layout/flashMessageAlert'); ?>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-6 p-0">
-            <table>
-                <thead>
-                    <?php foreach ($menus as $menu) : ?>
-                        <tr>
-                            <?php $id = base64_encode($menu['menu_id']); ?>
+<div class="flex w-full justify-between">
+    <div class="overflow-x-auto">
+        <h4 class="text-2xl font-semibold mb-4">Struktur</h4>
 
-                            <td id="<?= $id ?>" onclick="fetch(this)" style="cursor: pointer;" onMouseOver="this.style.color='salmon'" onMouseOut="this.style.color='black'">
-                                <span><?= $menu['title']; ?></span>
-                                <div class="spinner-border spinner-border-sm ms-2 d-none" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach ?>
-                </thead>
-            </table>
-        </div>
-
-        <div class="col-sm-6 p-0">
-            <h4 class="mb-3" id="formTitle">Tambah Data</h4>
-            <form method="POST" id="editMenuForm">
-                <!-- Title Input -->
-                <div class="mb-3" onclick="resetInvalidClass(this)">
-                    <label for="title" class="form-label fw-bold">Title</label>
-                    <input type="text" class="form-control" id="title" name="title" autofocus>
-                    <div class="invalid-feedback"></div>
-                </div>
-                <!-- Url Input -->
-                <div class="mb-3" onclick="resetInvalidClass(this)">
-                    <label for="url" class="form-label fw-bold">Url</label>
-                    <input type="text" class="form-control" id="url" name="url">
-                    <div class="invalid-feedback"></div>
-                </div>
-                <!-- Status Radio Input -->
-                <div class="mb-3" onclick="resetInvalidClass(this)">
-                    <label for="status" class="form-label fw-bold">Status</label><br>
-                    <?php foreach ($targets as $key => $target) : ?>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="target" value="<?= $target; ?>">
-                            <label class="form-check-label" for="<?= $key; ?>"><?= ucfirst($key); ?></label>
-                        </div>
-                    <?php endforeach ?>
-                    <small class="text-danger d-block"></small>
-                </div>
-                <div class="modal-footer d-flex justify-content-start">
-                    <button type="button" id="formSubmitBtn" class="btn btn-primary" onclick="saveAndUpdate()">Tambah</button>
-                </div>
-            </form>
-        </div>
+        <table>
+            <thead>
+                <?php foreach ($menus as $menu) : ?>
+                    <tr>
+                        <td>
+                            <button class="btn btn-error btn-sm mr-4" onclick="destroy('<?= $menu['menu_id']; ?>')">Delete</button>
+                        </td>
+                        <td id="<?= $menu['menu_id'] ?>" onclick="fetch(this)" class="cursor-pointer" onMouseOver="this.style.color='salmon'" onMouseOut="this.style.color='black'">
+                            <span><?= $menu['title']; ?></span>
+                            <progress class="progress hidden w-8 ml-4"></progress>
+                        </td>
+                    </tr>
+                <?php endforeach ?>
+            </thead>
+        </table>
     </div>
-</div>
+
+    <div class="basis-2/5">
+        <h4 class="text-2xl font-semibold mb-4" id="formTitle">Tambah Data</h4>
+        <form method="POST" id="menuForm">
+            <!-- Title Input -->
+            <div class="mb-3" onclick="resetInvalidClass(this)">
+                <label for="title" class="label">Title</label>
+                <input type="text" class="input input-bordered w-full max-w-xs" name="title" id="title" autofocus />
+                <div id="error-title" class="badge badge-error mt-2 hidden"></div>
+            </div>
+            <!-- Url Input -->
+            <div class="mb-3" onclick="resetInvalidClass(this)">
+                <label for="url" class="label">Url</label>
+                <input type="text" class="input input-bordered w-full max-w-xs" name="url" id="url" autofocus />
+                <div id="error-url" class="badge badge-error mt-2 hidden"></div>
+            </div>
+            <!-- Status Radio Input -->
+            <div class="mb-3" onclick="resetInvalidClass(this)">
+                <label for="status" class="form-label fw-bold">Status</label><br>
+                <?php foreach ($targets as $key => $target) : ?>
+                    <div class="flex items-center gap-2">
+                        <input class="radio" type="radio" name="target" value="<?= $target; ?>">
+                        <label class="label" for="<?= $key; ?>"><?= ucfirst($key); ?></label>
+                    </div>
+                <?php endforeach ?>
+                <div id="error-target" class="badge badge-error mt-2 hidden"></div>
+            </div>
+
+            <div class="modal-footer d-flex justify-content-start">
+                <button type="button" id="formSubmitBtn" class="btn btn-primary mt-4" onclick="saveAndUpdate()">Tambah</button>
+            </div>
+        </form>
+    </div>
 </div>
 <?= $this->endSection(); ?>
 
@@ -67,9 +66,12 @@
     const titleField = $('#title');
     const formTitle = $('#formTitle');
     const formSubmitBtn = $('#formSubmitBtn');
-    let elementTitleBeforeUpdate;
 
+    // Helper
     const hideEditForm = () => {
+        // ? Reset validation error in the form
+        resetInvalidClass($('#menuForm'));
+
         formTitle.text('Tambah Data');
         formSubmitBtn.text('Tambah');
         formSubmitBtn.prev().remove();
@@ -79,25 +81,30 @@
         $(`input:radio`).prop('checked', false);
     }
 
+    const displayError = (inputError) => {
+        inputError.forEach(error => {
+            $(`#error-${error.input_name}`).text(error.error_message);
+            $(`#error-${error.input_name}`).removeClass('hidden');
+            $(`[name="${error.input_name}"]`).addClass('input-error');
+        });
+    }
+
+    // CRUD
     const fetch = (element) => {
-        const url = '<?= site_url(route_to('backend.menus.show.ajax')); ?>';
-        const elementSpinner = $(element).find('.spinner-border');
-        elementTitleBeforeUpdate = $(element).find('span').first().text();
+        const url = siteUrl + '<?= $editUrl; ?>' + $(element).attr('id');
+        const elementSpinner = $(element).find('.progress');
 
         $.ajax({
             type: "POST",
             url: url,
-            data: {
-                id: $(element).attr('id')
-            },
             dataType: "json",
             beforeSend: function() {
-                elementSpinner.removeClass('d-none');
+                elementSpinner.removeClass('hidden');
             },
             success: function(response) {
-                // ? Check if input hidden for id exist
+                // ? Check if hidden input for id exist
                 if ($('#id').length < 1) {
-                    $('#editMenuForm').prepend(`
+                    $('#menuForm').prepend(`
                         <input type="hidden" name="_method" value="PATCH">
                         <input type="hidden" name="id" id="id" value="${response.menu_id}">
                     `);
@@ -105,23 +112,28 @@
                     $('#id').val(response.menu_id);
                 }
 
+                // ? Reset validation error in the form
+                resetInvalidClass($('#menuForm'));
+
                 if (formTitle.text() != 'Edit Data') {
                     formTitle.text('Edit Data');
                     formSubmitBtn.text('Ubah');
-                    formSubmitBtn.before(`<button type="button" class="btn btn-danger me-2" onclick="hideEditForm()">Cancel</button>`)
-                    $('#editMenuForm').find('.is-invalid').removeClass('is-invalid');
+                    formSubmitBtn.before(`<button type="button" class="btn btn-error mr-4" onclick="hideEditForm()">Cancel</button>`)
+                    $('#menuForm').find('.is-invalid').removeClass('is-invalid');
                 }
 
                 urlField.val(response.url);
                 titleField.val(response.title).focus();
                 $(`input:radio[value="${response.target}"][name='target']`).prop('checked', true);
-                elementSpinner.addClass('d-none');
+            },
+            complete: function() {
+                elementSpinner.addClass('hidden');
             }
         });
     }
 
     const store = (data) => {
-        let url = '<?= site_url(route_to('backend.menus.store.ajax')); ?>';
+        let url = siteUrl + '<?= $storeUrl; ?>';
 
         $.ajax({
             type: "POST",
@@ -135,23 +147,24 @@
             },
             success: function(response) {
                 if (response.status) {
+                    $('#menuForm').trigger('reset');
                     alert(response.message);
                     $(`thead`).prepend(`
                         <tr>    
-                            <td id="${response.data.menu_id}" onclick="fetch(this)" style="cursor: pointer;" onMouseOver="this.style.color='salmon'" onMouseOut="this.style.color='black'">
+                            <td>
+                                <button class="btn btn-error btn-sm mr-4" onclick="destroy('${response.data.menu_id}')">Delete</button>
+                            </td>
+                            <td id="${response.data.menu_id}" onclick="fetch(this)" class="cursor-pointer" onMouseOver="this.style.color='salmon'" onMouseOut="this.style.color='black'">
                                 <span>${response.data.title}</span>
-                                <div class="spinner-border spinner-border-sm ms-2 d-none" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
+                                <progress class="progress hidden w-8 ml-4"></progress>
                             </td>
                         </tr>
                     `);
                 } else {
-                    response.input_error.forEach(error => {
-                        $(`[name="${error.input_name}"]`).addClass('is-invalid');
-                        $(`[name="${error.input_name}"]`).next().text(error.error_message);
-                    });
+                    if (response.input_error) displayError(response.input_error);
                 }
+            },
+            complete: function() {
                 $('#formSubmitBtn').text('Tambah');
             }
         });
@@ -159,7 +172,7 @@
 
     const update = (data) => {
         const id = $('#id').val();
-        const url = urlFormatter('<?= site_url(route_to('backend.menus.update.ajax', ':id')); ?>', id);
+        const url = siteUrl + '<?= $updateUrl; ?>' + id;
         let oldTitle = $('#title').val();
 
         $.ajax({
@@ -172,29 +185,44 @@
                 $('#formSubmitBtn').text('Loading...');
             },
             success: function(response) {
-                console.log(response);
                 if (response.status) {
                     alert(response.message);
-                    $(`td span:contains(${elementTitleBeforeUpdate})`).text(response.data.title);
+                    $(document).find(`[id="${id}"]`).find('span').text(response.data.title);
                 } else {
-                    response.input_error.forEach(error => {
-                        $(`[name="${error.input_name}"]`).addClass('is-invalid');
-                        $(`[name="${error.input_name}"]`).next().text(error.error_message);
-                    });
+                    if (response.input_error) displayError(response.input_error);
                 }
+            },
+            complete: function() {
                 $('#formSubmitBtn').text('Ubah');
             }
         });
     }
 
     const saveAndUpdate = () => {
-        const form = $('#editMenuForm')[0];
+        const form = $('#menuForm')[0];
         const data = new FormData(form);
 
         if ($('#id').length < 1) {
             store(data);
         } else {
             update(data);
+        }
+    }
+
+    const destroy = (id) => {
+        if (confirm('Apakah anda yakin?')) {
+            const url = siteUrl + '<?= $destroyUrl; ?>' + id;
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                dataType: "json",
+                success: function(response) {
+                    if (response.status) $(document).find(`[id="${id}"]`).parent().remove();
+                    hideEditForm();
+                    alert(response.message);
+                }
+            });
         }
     }
 </script>

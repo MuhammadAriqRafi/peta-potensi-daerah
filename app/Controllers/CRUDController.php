@@ -71,6 +71,13 @@ class CRUDController extends BaseController
         return $this->response->setJSON($response);
     }
 
+    /*
+    Available Properties:
+    * $this->data['image_name']: string
+    * $this->data['image_path']: string
+    * $this->data['image_context']: string
+    * returnRecentStoredData: bool
+    */
     protected function ajaxStore()
     {
         // ? Validation
@@ -99,8 +106,9 @@ class CRUDController extends BaseController
         if ($this->model->save($this->data)) {
             if ($this->returnRecentStoredData) {
                 $response['data'] = $this->model->find($this->model->getInsertID());
+                $response['data'][$this->model->primaryKey] = base64_encode($response['data'][$this->model->primaryKey]);
             }
-            $response['data'] = $this->data;
+            // $response['data'] = $this->data;
             $this->resetClassProperty();
             return $this->response->setJSON($response);
         } else {
@@ -111,27 +119,63 @@ class CRUDController extends BaseController
         }
     }
 
+    /*
+    Available Properties:
+    * $this->data['image_name']: string
+    * $this->data['image_path']: string
+    * $this->data['image_context']: string
+    */
     protected function ajaxDestroy($id = null)
     {
         $id = base64_decode($id);
-        if ($this->data) $message = deleteImage($this->data['image_name'], $this->data['image_path'], $this->data['image_context']);
+
+        // ? Check if deleted record has image
+        if (array_key_exists('image_name', $this->data)) $message = deleteImage($this->data['image_name'], $this->data['image_path'], $this->data['image_context']);
         else $message = ucfirst($this->model->table) . ' berhasil dihapus';
+
+        // ? Preparing response
+        $response = [
+            'status' => true,
+            'message' => $message
+        ];
 
         if ($this->model->delete($id)) {
             $this->resetClassProperty();
-            return ['message' => $message];
+            return $response;
         } else {
-            return $this->response->setJSON(['message' => 'Terjadi kesalahan pada server']);
+            $response['status'] = false;
+            $response['message'] = 'Terjadi kesalahan pada server';
+
+            return $this->response->setJSON($response);
         }
     }
 
+    /*
+    Available Properties:
+    * $this->data['select']: array
+    */
     protected function ajaxEdit($id = null)
     {
-        $data = $this->model->find(base64_decode($id));
+        // ? Decode $id
+        $id = base64_decode($id);
+
+        // ? If you only want to get some fields in the record
+        if ($this->data['select']) {
+            $fields = implode(', ', $this->data['select']);
+            $data = $this->model->select($fields)->find($id);
+        } else {
+            $data = $this->model->find($id);
+        }
+
         $data[$this->model->primaryKey] = base64_encode($data[$this->model->primaryKey]);
+        $this->resetClassProperty();
         return $this->response->setJSON($data);
     }
 
+    /*
+    Available Properties:
+    * returnRecentStoredData: bool
+    */
     protected function ajaxUpdate($id = null)
     {
         // ? Validation
@@ -149,6 +193,10 @@ class CRUDController extends BaseController
 
         // ? Updating data
         if ($this->model->save($this->data)) {
+            if ($this->returnRecentStoredData) {
+                $menu = $this->model->find($id);
+                $response['data'] = $menu;
+            }
             $this->resetClassProperty();
             return $this->response->setJSON($response);
         } else {

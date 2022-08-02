@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use App\Controllers\Interfaces\CRUDInterface;
 use CodeIgniter\Model;
 
-class Menu extends Model
+class Menu extends Model implements CRUDInterface
 {
     protected $DBGroup          = 'default';
     protected $table            = 'menu';
@@ -16,18 +17,12 @@ class Menu extends Model
     protected $protectFields    = true;
     protected $allowedFields    = ['title', 'url', 'target'];
 
-    // Dates
-    protected $useTimestamps = false;
-    protected $dateFormat    = 'datetime';
-    protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
-    protected $deletedField  = 'deleted_at';
-
-    public function getMenuValidationRules()
+    public function fetchValidationRules(): array
     {
         return $rules = [
             'title' => 'required',
-            'url' => 'required'
+            'url' => 'required',
+            'target' => 'required'
         ];
     }
 }
