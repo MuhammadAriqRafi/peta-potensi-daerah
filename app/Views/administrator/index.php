@@ -123,9 +123,9 @@
             dataType: "json",
             success: function(response) {
                 if (response.status) {
+                    $(`#${administratorForm}`).trigger('reset');
                     alert(response.message);
                     reload(tableId);
-                    $('administratorForm').trigger('reset');
                 } else {
                     if (response.input_error) displayError(response.input_error);
                 }
@@ -194,7 +194,6 @@
                 url: url,
                 dataType: "json",
                 success: function(response) {
-                    console.log(response);
                     alert(response.message);
                     reload(tableId);
                 }

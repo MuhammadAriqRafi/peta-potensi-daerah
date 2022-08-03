@@ -2,23 +2,22 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Controllers\CRUDController;
 use App\Models\Setting;
 
-class SettingController extends BaseController
+class SettingController extends CRUDController
 {
-    protected $settings;
-
     public function __construct()
     {
-        $this->settings = new Setting();
+        parent::__construct(new Setting());
     }
 
     public function index()
     {
         $data = [
             'title' => 'Settings',
-            'settings'  => $this->settings->findAll(),
+            'settings'  => $this->model->findAll(),
+            'updateUrl' => '/backend/settings/ajaxUpdate/',
         ];
 
         return view('setting/index', $data);
@@ -26,52 +25,41 @@ class SettingController extends BaseController
 
     public function ajaxUpdate($id = null)
     {
+        // ? Decode $id
         $id = base64_decode($id);
-        $setting = $this->settings->select('keyword, value')->find($id);
+        $setting = $this->model->select('keyword, value')->find($id);
 
-        // TODO: Get csrf token from header for the sake of curiousity
+        // ? Preparing the data
+        $data = [
+            'value' => $this->request->getVar('value'),
+            'setting_id' => $id,
+            'class' => '',
+            'sort' => 0,
+        ];
+
+        // ? If the keyword is backsound, supply the data variable with the new file and old file
         if ($setting['keyword'] == 'backsound') {
-            // Set rules to the file
             $backsound = $this->request->getFile('value');
-            $rules = $this->settings->getSettingValidationRules('uploaded[value]|max_size[value,1024]|is_image[value]|mime_in[value,image/jpg,image/jpeg,image/png]');
-        } else $rules = $this->settings->getSettingValidationRules();
 
-        // Validate the input
-        if (!$this->validate($rules)) {
-            return $this->response->setJSON([_validate($rules), $this->request->headers()]);
-        }
-
-        // Store the file (if input is file)
-        if ($setting['keyword'] == 'backsound') {
-            try {
-                unlink('file/' . $setting['value']);
-                $backsoundName = storeAs($backsound, 'file', 'setting');
-            } catch (\Throwable $th) {
-                return $this->response->setJSON($th->getMessage());
+            if ($backsound) {
+                $file = [
+                    'file' => $backsound,
+                    'file_old' => $setting['value'],
+                    'file_path' => 'file/',
+                    'file_context' => 'setting',
+                    'validation_options' => 'uploaded[value]|max_size[value,1024]',
+                ];
+                $data = array_merge($data, $file);
+            } else {
+                $data['value'] = $setting['value'];
             }
         }
 
-        // Preparing the data
-        $data = [
-            'setting_id' => $id,
-            'value' => $this->request->getVar('value') ?? $backsoundName,
-            'class' => '',
-            'sort' => 0
-        ];
-
-        if ($this->settings->save($data)) {
-            $data = $this->settings->select('value, type')->find($id);
-
-            return $this->response->setJSON([
-                'status' => true,
-                'message' => 'Setting berhasil diubah',
-                'data' => $data
-            ]);
-        } else {
-            return $this->response->setJSON([
-                'status' => false,
-                'message' => 'Setting gagal diubah'
-            ]);
-        }
+        $this->setData($data);
+        $this->setReturnRecentStoredData([
+            'status' => true,
+            'selected_fields' => 'keyword, value, setting_id, type'
+        ]);
+        return parent::ajaxUpdate($id);
     }
 }

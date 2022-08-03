@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use App\Controllers\Interfaces\CRUDInterface;
 use CodeIgniter\Model;
 use Config\Services;
 
-class Setting extends Model
+class Setting extends Model implements CRUDInterface
 {
     protected $DBGroup          = 'default';
     protected $table            = 'settings';
@@ -24,19 +25,10 @@ class Setting extends Model
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
-    public function getSetting($id = false)
-    {
-        if ($id) {
-            return $this->findAll();
-        }
-
-        return $this->where(['id' => $id])->first();
-    }
-
-    public function getSettingValidationRules($specialRule = null)
+    public function fetchValidationRules($options = null): array
     {
         return $rules = [
-            'value' => $specialRule ?? 'required',
+            'value' => $options ?? 'required',
         ];
     }
 }

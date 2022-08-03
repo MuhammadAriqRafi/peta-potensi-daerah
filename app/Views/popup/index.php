@@ -122,7 +122,6 @@
         $(`[name="image"]`).prev().attr('src', '');
     }
 
-    // TODO: Update still need fixing
     // CRUD
     const create = () => {
         $(`#${popupModalLabel}`).text('Tambah Pop Up');
@@ -147,7 +146,6 @@
             contentType: false,
             dataType: "json",
             success: function(response) {
-                console.log(response);
                 if (response.status) {
                     alert(response.message);
                     reload(tableId);
@@ -235,8 +233,7 @@
             success: function(response) {
                 if (response.status) {
                     alert(response.message);
-                    $(`tr[id="${id}"] td`).first().text(response.data.title);
-                    $(`tr[id="${id}"] td`).eq(1).text(response.data.value);
+                    reload(tableId);
 
                     // ? Update the popup active option for the updated popup
                     $(`option[value="${id}"]`).text(response.data.title);

@@ -25,12 +25,12 @@ class Popup extends Model implements DatatableInterface, CRUDInterface
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
-    public function fetchValidationRules(): array
+    public function fetchValidationRules(string $options = null): array
     {
         return $rules = [
             'title' => 'required',
             'image' => [
-                'rules' => 'uploaded[image]|max_size[image,1024]|is_image[image]|mime_in[image,image/jpg,image/jpeg,image/png]',
+                'rules' => 'max_size[image,1024]|is_image[image]|mime_in[image,image/jpg,image/jpeg,image/png]' . $options,
                 'errors' => [
                     'uploaded' => 'Image is required'
                 ]

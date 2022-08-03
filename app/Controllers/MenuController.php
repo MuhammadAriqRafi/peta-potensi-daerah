@@ -39,7 +39,7 @@ class MenuController extends CRUDController
     // Ajax Methods
     public function ajaxEdit($id = null)
     {
-        $this->data['select'] = ['title', 'url', 'target', 'menu_id'];
+        $this->setData(['select' => 'title, url, target, menu_id']);
         return parent::ajaxEdit($id);
     }
 
@@ -56,7 +56,10 @@ class MenuController extends CRUDController
         ];
 
         $this->setData($data);
-        $this->setReturnRecentStoredData(true);
+        $this->setReturnRecentStoredData([
+            'status' => true,
+            'selected_fields' => 'menu_id, title, url, target'
+        ]);
 
         return parent::ajaxUpdate($id);
     }
@@ -70,7 +73,10 @@ class MenuController extends CRUDController
         ];
 
         $this->setData($data);
-        $this->setReturnRecentStoredData(true);
+        $this->setReturnRecentStoredData([
+            'status' => true,
+            'selected_fields' => 'menu_id, title, url, target'
+        ]);
 
         return parent::ajaxStore();
     }

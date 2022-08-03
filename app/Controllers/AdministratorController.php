@@ -96,6 +96,6 @@ class AdministratorController extends CRUDController
 
     public function ajaxDestroy($id = null)
     {
-        return parent::ajaxDestroy($id);
+        return $this->response->setJSON(parent::ajaxDestroy($id));
     }
 }

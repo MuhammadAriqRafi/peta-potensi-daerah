@@ -84,7 +84,8 @@ class PopupController extends CRUDController
             'title' => $this->request->getVar('title'),
             'image_file' => $this->request->getFile('image'),
             'image_path' => 'img/',
-            'image_context' => 'popup'
+            'image_context' => 'popup',
+            'validation_options' => '|uploaded[image]'
         ];
 
         $this->setData($data);
@@ -98,45 +99,34 @@ class PopupController extends CRUDController
 
     public function ajaxUpdate($id = null)
     {
-        $rules = $this->popup->getPopupValidationRules();
-        $rules['image']['rules'] = str_replace('uploaded[image]|', '', $rules['image']['rules']);
-
-        if (!$this->validate($rules)) {
-            return $this->response->setJSON(_validate($rules));
-        }
-
         $id = base64_decode($this->request->getVar('id'));
         $oldImage = $this->request->getVar('oldImage');
         $newImage = $this->request->getFile('image');
-        $message = 'Pop Up berhasil diubah';
-
-        if ($newImage->getError() != 4) {
-            $message = deleteImage($oldImage, 'img/', 'Pop Up');
-            $imageName = storeAs($this->request->getFile('image'), 'img/', 'popup');
-        } else {
-            $imageName = $oldImage;
-        }
 
         $data = [
+            'value' => $oldImage,
             'popup_id' => $id,
             'title' => $this->request->getVar('title'),
-            'value' => $imageName
         ];
 
-        if ($this->popup->save($data)) {
-            $updatedPopup = $this->popup->select('title, value, status')->find($id);
-
-            return $this->response->setJSON([
-                'status' => true,
-                'message' => $message,
-                'data' => $updatedPopup
-            ]);
-        } else {
-            return $this->response->setJSON([
-                'status' => false,
-                'message' => 'Pop Up gagal diubah',
-            ]);
+        // ? If the client send image
+        if ($newImage->getError() != 4) {
+            $file = [
+                'file' => $newImage,
+                'file_old' => $oldImage,
+                'file_path' => 'img/',
+                'file_context' => 'popup'
+            ];
+            $data = array_merge($data, $file);
         }
+
+        $this->setData($data);
+        $this->setReturnRecentStoredData([
+            'status' => true,
+            'selected_fields' => 'title, value, status, popup_id'
+        ]);
+
+        return parent::ajaxUpdate($id);
     }
 
     public function ajaxDestroy($id = null)

@@ -6,9 +6,8 @@ use App\Controllers\BaseController;
 
 class CRUDController extends BaseController
 {
-    // TODO: store and update method more or less similar, consider merging them in one method
     protected object $model;
-    protected bool $returnRecentStoredData = false;
+    protected $returnRecentStoredData = false;
     protected array $data = [];
 
     protected function __construct($model)
@@ -34,6 +33,10 @@ class CRUDController extends BaseController
     }
 
     // CRUD
+    /*
+        ! The model should implement DatatableInterface
+        ! The model should implement CRUDInterface
+    */
     protected function ajaxIndex()
     {
         helper('utilities');
@@ -72,19 +75,24 @@ class CRUDController extends BaseController
     }
 
     /*
-    Available Properties:
-    * $this->data['image_name']: string
-    * $this->data['image_path']: string
-    * $this->data['image_context']: string
-    * returnRecentStoredData: bool
+        Available Properties:
+        * $this->data['image_name']: string
+        * $this->data['image_path']: string
+        * $this->data['image_context']: string
+        * returnRecentStoredData: bool
     */
     protected function ajaxStore()
     {
         // ? Validation
-        $rules = $this->model->fetchValidationRules();
+        $rules = $this->model->fetchValidationRules($this->data['validation_options'] ?? null);
 
         if (!$this->validate($rules)) {
             return $this->response->setJSON(_validate($rules));
+        }
+
+        // ? Remove the validation_options if after validation passed, the validation_options exist
+        if (array_key_exists('validation_options', $this->data)) {
+            unset($this->data['validation_options']);
         }
 
         // ? Preparing response
@@ -104,11 +112,11 @@ class CRUDController extends BaseController
 
         // ? Saving data
         if ($this->model->save($this->data)) {
-            if ($this->returnRecentStoredData) {
-                $response['data'] = $this->model->find($this->model->getInsertID());
+            if ($this->returnRecentStoredData['status'] ?? $this->returnRecentStoredData) {
+                $response['data'] = $this->model->select($this->returnRecentStoredData['selected_fields'] ?? '*')->find($this->model->getInsertID());
                 $response['data'][$this->model->primaryKey] = base64_encode($response['data'][$this->model->primaryKey]);
             }
-            // $response['data'] = $this->data;
+
             $this->resetClassProperty();
             return $this->response->setJSON($response);
         } else {
@@ -120,10 +128,10 @@ class CRUDController extends BaseController
     }
 
     /*
-    Available Properties:
-    * $this->data['image_name']: string
-    * $this->data['image_path']: string
-    * $this->data['image_context']: string
+        Available Properties:
+        * $this->data['image_name']: string
+        * $this->data['image_path']: string
+        * $this->data['image_context']: string
     */
     protected function ajaxDestroy($id = null)
     {
@@ -151,8 +159,8 @@ class CRUDController extends BaseController
     }
 
     /*
-    Available Properties:
-    * $this->data['select']: array
+        Available Properties:
+        * $this->data['select']: array
     */
     protected function ajaxEdit($id = null)
     {
@@ -160,9 +168,8 @@ class CRUDController extends BaseController
         $id = base64_decode($id);
 
         // ? If you only want to get some fields in the record
-        if ($this->data['select']) {
-            $fields = implode(', ', $this->data['select']);
-            $data = $this->model->select($fields)->find($id);
+        if ($this->data['select'] ?? false) {
+            $data = $this->model->select($this->data['select'])->find($id);
         } else {
             $data = $this->model->find($id);
         }
@@ -173,16 +180,26 @@ class CRUDController extends BaseController
     }
 
     /*
-    Available Properties:
-    * returnRecentStoredData: bool
+        Available Properties:
+        * $this->data['file']: string
+        * $this->data['file_path']: string
+        * $this->data['file_context']: string
+        * returnRecentStoredData: bool
+        * returnRecentStoredData['status']: bool
+        * returnRecentStoredData['selected_fields']: string
     */
     protected function ajaxUpdate($id = null)
     {
         // ? Validation
-        $rules = $this->model->fetchValidationRules();
+        $rules = $this->model->fetchValidationRules($this->data['validation_options'] ?? null);
 
         if (!$this->validate($rules)) {
             return $this->response->setJSON(_validate($rules));
+        }
+
+        // ? Remove the validation_options if after validation passed, the validation_options exist
+        if (array_key_exists('validation_options', $this->data)) {
+            unset($this->data['validation_options']);
         }
 
         // ? Preparing response
@@ -191,17 +208,33 @@ class CRUDController extends BaseController
             'message' => ucfirst($this->model->table) . ' berhasil diubah',
         ];
 
+        // ? Check if any image needs to be stored
+        // ? Always put the field for the image in the first index of data variable
+        if (array_key_exists('file', $this->data)) {
+            try {
+                unlink($this->data['file_path'] . $this->data['file_old']);
+                $this->data[array_key_first($this->data)] = storeAs($this->data['file'], $this->data['file_path'], $this->data['file_context']);
+            } catch (\Throwable $th) {
+            }
+
+            unset($this->data['file']);
+            unset($this->data['file_old']);
+            unset($this->data['file_path']);
+            unset($this->data['file_context']);
+        }
+
         // ? Updating data
         if ($this->model->save($this->data)) {
-            if ($this->returnRecentStoredData) {
-                $menu = $this->model->find($id);
-                $response['data'] = $menu;
+            if ($this->returnRecentStoredData['status'] ?? $this->returnRecentStoredData) {
+                $response['data'] = $this->model->select($this->returnRecentStoredData['selected_fields'] ?? '*')->find($id);
+                $response['data'][$this->model->primaryKey] = base64_encode($response['data'][$this->model->primaryKey]);
             }
+
             $this->resetClassProperty();
             return $this->response->setJSON($response);
         } else {
             $response['status'] = false;
-            $response['message'] = 'gagal diubah';
+            $response['message'] = ucfirst($this->model->table) . 'gagal diubah';
 
             return $this->response->setJSON($response);
         };

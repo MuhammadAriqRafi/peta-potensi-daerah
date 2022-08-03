@@ -2,8 +2,6 @@
 
 namespace Config;
 
-use App\Controllers\CategoryController;
-
 // Create a new instance of our RouteCollection class.
 $routes = Services::routes();
 
@@ -61,10 +59,6 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
         $routes->post('(:any)', 'AdministratorController::$1');
         $routes->patch('(:any)', 'AdministratorController::$1');
         $routes->delete('(:any)', 'AdministratorController::$1');
-        // $routes->get('/', 'AdministratorController::index', ['as' => 'backend.administrators.index']);
-        // $routes->post('/', 'AdministratorController::store', ['as' => 'backend.administrators.store']);
-        // $routes->get('(:any)/edit', 'AdministratorController::edit/$1', ['as' => 'backend.administrators.edit']);
-        // $routes->patch('(:any)', 'AdministratorController::update/$1', ['as' => 'backend.administrators.update']);
     });
 
     // Guestbooks Routes
@@ -85,6 +79,7 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
 
     // Settings Routes
     $routes->group('settings', function ($routes) {
+        $routes->patch('(:any)', 'SettingController::$1');
         $routes->get('/', 'SettingController::index', ['as' => 'backend.settings.index']);
         $routes->patch('ajax/(:any)', 'SettingController::ajaxUpdate/$1', ['as' => 'backend.settings.update.ajax']);
     });
@@ -96,9 +91,6 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
         $routes->post('(:any)', 'MenuController::$1');
         $routes->patch('(:any)', 'MenuController::$1');
         $routes->delete('(:any)', 'MenuController::$1');
-        // $routes->post('/', 'MenuController::ajaxStore', ['as' => 'backend.menus.store.ajax']);
-        // $routes->post('edit', 'MenuController::ajaxShow', ['as' => 'backend.menus.show.ajax']);
-        // $routes->patch('(:any)', 'MenuController::ajaxUpdate/$1', ['as' => 'backend.menus.update.ajax']);
     });
 
     // Posts Routes
@@ -137,11 +129,6 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
         $routes->post('(:any)', 'ProfileController::$1');
         $routes->patch('(:any)', 'ProfileController::$1');
         $routes->delete('(:any)', 'ProfileController::$1');
-        // $routes->get('/', 'ProfileController::index', ['as' => 'backend.profiles.index']);
-        // $routes->get('ajax', 'ProfileController::ajaxIndex', ['as' => 'backend.profiles.index.ajax']);
-        // $routes->post('ajax', 'ProfileController::ajaxStore', ['as' => 'backend.profiles.store.ajax']);
-        // $routes->get('(:any)/edit', 'ProfileController::edit/$1', ['as' => 'backend.profiles.edit']);
-        // $routes->patch('(:any)', 'ProfileController::update/$1', ['as' => 'backend.profiles.update']);
     });
 });
 
