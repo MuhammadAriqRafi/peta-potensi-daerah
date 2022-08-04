@@ -91,7 +91,7 @@
         });
     }
 
-    const isPopupFormInUpdateState = () => {
+    const isFormInUpdateState = () => {
         if ($('input[name="id"]').length > 0) return true;
         return false;
     }
@@ -103,7 +103,7 @@
         $('[name="username"]').val('');
 
         resetInvalidClass($(`#${administratorForm}`));
-        if (isPopupFormInUpdateState()) {
+        if (isFormInUpdateState()) {
             $('input[name="id"]').remove();
         }
 
@@ -146,7 +146,7 @@
                 $('[name="nama"]').val(response.nama);
                 $('[name="username"]').val(response.username);
 
-                if (isPopupFormInUpdateState()) {
+                if (isFormInUpdateState()) {
                     $('input[name="id"]').val(response.admin_id);
                 } else {
                     $(`#${administratorForm}`).prepend(`<input type="hidden" name="id" value="${response.admin_id}">`);
@@ -205,7 +205,7 @@
         const form = $(`#${administratorForm}`)[0];
         const data = new FormData(form);
 
-        if (isPopupFormInUpdateState()) {
+        if (isFormInUpdateState()) {
             const id = $('input[name="id"]').val();
             update(id, data);
         } else store(data);

@@ -154,7 +154,7 @@ class CRUDController extends BaseController
             $response['status'] = false;
             $response['message'] = 'Terjadi kesalahan pada server';
 
-            return $this->response->setJSON($response);
+            return $response;
         }
     }
 

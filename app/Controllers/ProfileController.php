@@ -2,28 +2,28 @@
 
 namespace App\Controllers;
 
-use App\Controllers\PostController;
+use App\Controllers\CRUDController;
 use App\Models\Post;
 use Config\Services;
 
-class ProfileController extends PostController
+class ProfileController extends CRUDController
 {
-    protected $profiles;
-
     public function __construct()
     {
-        $this->profiles = new Post();
+        parent::__construct(new Post('profil'));
     }
 
     public function index()
     {
         $data = [
             'title' => 'Tentang Aplikasi',
-            'profiles' => $this->profiles->getProfiles(),
+            'profiles' => $this->model->getProfiles(),
             'statuses' => ['draft', 'publish'],
             'validation' => Services::validation(),
             'storeUrl' => '/backend/profiles/ajaxStore',
-            'indexUrl' => '/backend/profiles/ajaxIndex'
+            'indexUrl' => '/backend/profiles/ajaxIndex',
+            'destroyUrl' => '/backend/profiles/ajaxDestroy/',
+            'editUrl' => '/backend/profiles/ajaxEdit/',
         ];
 
         return view('profile/index', $data);
@@ -73,20 +73,11 @@ class ProfileController extends PostController
     // Ajax Methods
     public function ajaxIndex()
     {
-        $uri = service('uri');
-
-        // ? Call method ajaxGetDataDataTables from PostController to display data
-        return $this->ajaxGetDataDataTables($uri->getSegment(2), $this->profiles);
+        return parent::ajaxIndex();
     }
 
     public function ajaxStore()
     {
-        $rules = $this->profiles->getProfileValidationRules();
-
-        if (!$this->validate($rules)) {
-            return $this->response->setJSON(_validate($rules));
-        }
-
         $title = $this->request->getVar('title');
         $data = [
             'post_type' => 'profil',
@@ -98,13 +89,18 @@ class ProfileController extends PostController
             'description' => $this->request->getVar('description'),
         ];
 
-        if ($this->profiles->save($data)) return $this->response->setJSON([
-            'status' => true,
-            'message' => 'Profil berhasil ditambahkan!'
-        ]);
-        else return $this->response->setJSON([
-            'status' => false,
-            'message' => 'Profil gagal ditambahkan!'
-        ]);
+        $this->setData($data);
+        return parent::ajaxStore();
+    }
+
+    public function ajaxDestroy($id = null)
+    {
+        return $this->response->setJSON(parent::ajaxDestroy($id));
+    }
+
+    public function ajaxEdit($id = null)
+    {
+        $this->setData(['select' => 'title, date_publish, content, description, status, post_id']);
+        return parent::ajaxEdit($id);
     }
 }

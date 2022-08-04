@@ -11,7 +11,7 @@
 <input type="checkbox" id="profileModal" class="modal-toggle" />
 <div class="modal modal-bottom sm:modal-middle">
     <div class="modal-box sm:p-8">
-        <h3 class="font-bold text-2xl sm:text-4xl mb-6">Tambah Tentang Aplikasi</h3>
+        <h3 id="profileModalLabel" class="font-bold text-2xl sm:text-4xl mb-6">Tambah Tentang Aplikasi</h3>
 
         <!-- Popup Form -->
         <form action="#" id="profileForm">
@@ -36,7 +36,7 @@
             </div>
             <!-- Status Radio Input -->
             <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Title</span>
+                <span class="label-text font-bold">Status</span>
                 <div class="flex items-center gap-4 my-2">
                     <?php foreach ($statuses as $status) : ?>
                         <div class="flex items-center gap-4">
@@ -57,7 +57,7 @@
             <!-- Modal Action Buttons -->
             <div class="modal-action">
                 <label for="profileModal" class="btn btn-error">Batal</label>
-                <label class="btn btn-primary" onclick="store()">Tambah</label>
+                <label id="profileFormActionBtn" class="btn btn-primary" onclick="save()">Tambah</label>
             </div>
         </form>
         <!-- End of Popup Form -->
@@ -92,6 +92,13 @@
 <?= $this->section('script'); ?>
 <script src="<?= base_url('js/ajaxUtilities.js'); ?>"></script>
 <script>
+    const tableId = 'profileTable';
+    const profileForm = 'profileForm';
+    const profileModal = 'profileModal';
+    const profileModalLabel = 'profileModalLabel';
+    const profileFormActionBtn = 'profileFormActionBtn';
+
+    // Helper
     const displayError = (inputError) => {
         inputError.forEach(error => {
             let input = $(`[name=${error.input_name}]`);
@@ -119,26 +126,33 @@
         });
     }
 
-    const destroy = (id, context = '') => {
+    const isFormInUpdateState = () => {
+        if ($('input[name="id"]').length > 0) return true;
+        return false;
+    }
+
+    // CRUD
+    const destroy = (id) => {
         if (confirm('Apakah anda yakin?')) {
-            let url = urlFormatter(`<?= site_url(route_to('backend.posts.delete', ':id', ':context')); ?>`, id, context);
+            const url = siteUrl + '<?= $destroyUrl; ?>' + id;
 
             $.ajax({
-                type: "DELETE",
+                type: "POST",
                 url: url,
+                data: {
+                    _method: "DELETE"
+                },
                 dataType: "json",
                 success: function(response) {
-                    if (response.status == 1) alert(response.message);
-                    reload('profileTable');
+                    if (response.status) alert(response.message);
+                    reload(tableId);
                 }
             });
         }
     }
 
-    const store = () => {
+    const store = (data) => {
         const url = siteUrl + '<?= $storeUrl; ?>';
-        const form = $('#profileForm')[0];
-        const data = new FormData(form);
 
         $.ajax({
             type: "POST",
@@ -151,16 +165,45 @@
                 if (response.status) {
                     alert(response.message);
                     $('#summernote').summernote('reset');
-                    $('#profileForm').trigger('reset');
-                    reload('profileTable');
-                    reload();
+                    $(`#${profileForm}`).trigger('reset');
+                    reload(tableId);
                 } else {
-                    if (response.input_error) {
-                        displayError(response.input_error);
-                    }
+                    if (response.input_error) displayError(response.input_error);
                 }
             },
         });
+    }
+
+    const edit = (id) => {
+        const url = siteUrl + '<?= $editUrl; ?>' + id;
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            dataType: "json",
+            success: function(response) {
+                console.log(response);
+                // TODO: Currently working on tentang aplikasi management (edit functionality)
+
+                if (!isFormInUpdateState()) {
+                    $(`#${profileModalLabel}`).text('Ubah Tentang Aplikasi');
+                    $(`#${profileFormActionBtn}`).text('Ubah');
+                    $(`#${profileForm}`).prepend(`
+                        <input type="hidden" name="_method" value="PATCH">
+                        <input type="hidden" name="id" value="${response.post_id}">
+                    `);
+                }
+
+                $(`#${profileModal}`).prop('checked', true);
+            }
+        });
+    }
+
+    const save = () => {
+        const form = $(`#${profileForm}`)[0];
+        const data = new FormData(form);
+
+        store(data);
     }
 
     // ? Summernote
@@ -181,19 +224,28 @@
     $(document).ready(function() {
         // ? DataTables
         const table = createDataTable('profileTable', siteUrl + '<?= $indexUrl; ?>', [{
-                data: 0
+                name: 'title',
+                data: 'title'
             },
             {
-                data: 1
+                name: 'author',
+                data: 'author'
             },
             {
-                data: 2
+                name: 'DATE(date_publish)',
+                data: 'DATE(date_publish)'
             },
             {
-                data: 3
+                name: 'status',
+                data: 'status'
             },
             {
-                data: 4
+                data: 'post_id',
+                searchable: false,
+                orderable: false,
+                render: function(data) {
+                    return editDeleteBtn(data);
+                }
             },
         ]);
     });
