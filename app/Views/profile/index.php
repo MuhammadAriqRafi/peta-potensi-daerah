@@ -26,13 +26,13 @@
             <div class="form-control mb-4" onclick="resetInvalidClass(this)">
                 <span class="label-text font-bold">Date Publish</span>
                 <input type="date" class="input input-bordered w-full max-w-xs my-2" name="date_publish" min="1900-01-01" max="<?= date("Y-12-31"); ?>" value="<?= date('Y-m-d'); ?>" />
-                <div id="error-date_publish" class="badge badge-error hidden">ghost</div>
+                <div id="error-date_publish" class="badge badge-error hidden"></div>
             </div>
             <!-- Content Textarea -->
             <div class="form-control mb-4" onclick="resetInvalidClass(this)">
                 <span class="label-text font-bold mb-2">Content</span>
                 <textarea id="summernote" name="content"></textarea>
-                <div id="error-content" class="badge badge-error hidden mt-2">ghost</div>
+                <div id="error-content" class="badge badge-error hidden mt-2"></div>
             </div>
             <!-- Status Radio Input -->
             <div class="form-control mb-4" onclick="resetInvalidClass(this)">
@@ -45,13 +45,13 @@
                         </div>
                     <?php endforeach ?>
                 </div>
-                <div id="error-status" class="badge badge-error hidden">ghost</div>
+                <div id="error-status" class="badge badge-error hidden"></div>
             </div>
             <!-- Description Textarea -->
             <div class="form-control mb-4" onclick="resetInvalidClass(this)">
                 <span class="label-text font-bold">Description</span>
                 <textarea class="textarea textarea-bordered my-2" name="description"></textarea>
-                <div id="error-description" class="badge badge-error hidden">ghost</div>
+                <div id="error-description" class="badge badge-error hidden"></div>
             </div>
 
             <!-- Modal Action Buttons -->
@@ -67,7 +67,7 @@
 
 <?= $this->section('toolbar'); ?>
 <!-- The button to open modal -->
-<label for="profileModal" class="btn modal-button">Tambah Data</label>
+<label for="profileModal" class="btn modal-button" onclick="create()">Tambah Data</label>
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
@@ -126,9 +126,40 @@
         });
     }
 
-    const isFormInUpdateState = () => {
-        if ($('input[name="id"]').length > 0) return true;
-        return false;
+    const setFormState = (state, id = null) => {
+        const capitalizedStateFirstLetter = state.charAt(0).toUpperCase() + state.slice(1);
+
+        resetInvalidClass($(`#${profileForm}`));
+
+        if (capitalizedStateFirstLetter == 'Tambah') {
+            // ? Set form action for 'Tambah'
+            $(`#${profileForm}`).attr('action', siteUrl + '<?= $storeUrl; ?>');
+
+            // ? If form current state is already 'Tambah'
+            if ($('input[name="_method"]').length < 1) {
+                return true;
+            } else {
+                $('input[name="_method"]').remove();
+                $(`#${profileFormActionBtn}`).text(capitalizedStateFirstLetter);
+                $(`#${profileModalLabel}`).text(`${capitalizedStateFirstLetter} Tentang Aplikasi`);
+                $(`#${profileForm}`).trigger('reset');
+                $('#summernote').summernote('reset');
+            }
+        } else if (capitalizedStateFirstLetter == 'Ubah') {
+            // ? Set form action for 'Ubah'
+            $(`#${profileForm}`).attr('action', siteUrl + '<?= $updateUrl; ?>' + id);
+
+            // ? If form current state is already 'Ubah'
+            if ($('input[name="_method"]').length > 1) {
+                return true;
+            } else {
+                $(`#${profileForm}`).prepend(`
+                    <input type="hidden" name="_method" value="PATCH">
+                `);
+                $(`#${profileFormActionBtn}`).text(capitalizedStateFirstLetter);
+                $(`#${profileModalLabel}`).text(`${capitalizedStateFirstLetter} Tentang Aplikasi`);
+            }
+        }
     }
 
     // CRUD
@@ -151,8 +182,12 @@
         }
     }
 
+    const create = () => {
+        setFormState('Tambah');
+    }
+
     const store = (data) => {
-        const url = siteUrl + '<?= $storeUrl; ?>';
+        const url = $(`#${profileForm}`).attr('action');
 
         $.ajax({
             type: "POST",
@@ -161,7 +196,6 @@
             processData: false,
             contentType: false,
             success: function(response) {
-                console.log(response);
                 if (response.status) {
                     alert(response.message);
                     $('#summernote').summernote('reset');
@@ -182,19 +216,36 @@
             url: url,
             dataType: "json",
             success: function(response) {
-                console.log(response);
-                // TODO: Currently working on tentang aplikasi management (edit functionality)
+                setFormState('Ubah', response.post_id);
 
-                if (!isFormInUpdateState()) {
-                    $(`#${profileModalLabel}`).text('Ubah Tentang Aplikasi');
-                    $(`#${profileFormActionBtn}`).text('Ubah');
-                    $(`#${profileForm}`).prepend(`
-                        <input type="hidden" name="_method" value="PATCH">
-                        <input type="hidden" name="id" value="${response.post_id}">
-                    `);
-                }
+                $('input[name="title"]').val(response.title);
+                $(`input[value="${response.status}"]`).prop('checked', true);
+                $('input[name="date_publish"]').val(response.date_publish);
+                $('#summernote').summernote('code', response.content);
+                $('textarea[name="description"]').val(response.description);
 
                 $(`#${profileModal}`).prop('checked', true);
+            }
+        });
+    }
+
+    const update = (data) => {
+        const url = $(`#${profileForm}`).attr('action');
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            processData: false,
+            contentType: false,
+            dataType: "json",
+            success: function(response) {
+                if (response.status) {
+                    alert(response.message);
+                    reload(table);
+                } else {
+                    if (response.input_error) displayError(response.input_error);
+                }
             }
         });
     }
@@ -203,7 +254,8 @@
         const form = $(`#${profileForm}`)[0];
         const data = new FormData(form);
 
-        store(data);
+        if ($('input[name="_method"]').length > 0) update(data);
+        else store(data);
     }
 
     // ? Summernote

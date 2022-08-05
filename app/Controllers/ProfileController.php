@@ -24,6 +24,7 @@ class ProfileController extends CRUDController
             'indexUrl' => '/backend/profiles/ajaxIndex',
             'destroyUrl' => '/backend/profiles/ajaxDestroy/',
             'editUrl' => '/backend/profiles/ajaxEdit/',
+            'updateUrl' => '/backend/profiles/ajaxUpdate/',
         ];
 
         return view('profile/index', $data);
@@ -39,35 +40,6 @@ class ProfileController extends CRUDController
         ];
 
         return view('profile/edit', $data);
-    }
-
-    public function update($id = null)
-    {
-        if (!$this->validate([
-            'title' => 'required',
-            'date_publish' => 'required',
-            'content' => 'required',
-            'status' => 'required',
-            'description' => 'required'
-        ])) {
-            return redirect()->back()->withInput();
-        }
-
-        $title = $this->request->getVar('title');
-
-        $this->profiles->save([
-            'post_id' => $id,
-            'post_type' => 'profil',
-            'date_modify' => date('Y-m-d H:i:s'),
-            'slug' => url_title($title, '-', true),
-            'title' => $title,
-            'date_publish' => $this->request->getVar('date_publish'),
-            'content' => $this->request->getVar('content'),
-            'status' => $this->request->getVar('status'),
-            'description' => $this->request->getVar('description')
-        ]);
-
-        return redirect()->back()->with('success', 'Tentang Aplikasi berhasil diubah!');
     }
 
     // Ajax Methods
@@ -100,7 +72,29 @@ class ProfileController extends CRUDController
 
     public function ajaxEdit($id = null)
     {
-        $this->setData(['select' => 'title, date_publish, content, description, status, post_id']);
+        $this->setData(['select' => 'title, DATE(date_publish) as date_publish, content, description, status, post_id']);
         return parent::ajaxEdit($id);
+    }
+
+    public function ajaxUpdate($id = null)
+    {
+        // ? Decode $id
+        $id = base64_decode($id);
+        $title = $this->request->getVar('title');
+
+        $data = [
+            'post_id' => $id,
+            'post_type' => 'profil',
+            'date_modify' => date('Y-m-d H:i:s'),
+            'slug' => url_title($title, '-', true),
+            'title' => $title,
+            'date_publish' => $this->request->getVar('date_publish'),
+            'content' => $this->request->getVar('content'),
+            'status' => $this->request->getVar('status'),
+            'description' => $this->request->getVar('description')
+        ];
+
+        $this->setData($data);
+        return parent::ajaxUpdate($id);
     }
 }
