@@ -3653,6 +3653,15 @@ body[dir="rtl"] .checkbox:checked,
   outline-offset: 2px;
 }
 
+.select-error {
+  --tw-border-opacity: 1;
+  border-color: hsl(var(--er) / var(--tw-border-opacity));
+}
+
+.select-error:focus {
+  outline: 2px solid hsl(var(--er));
+}
+
 .select-disabled, 
   .select[disabled] {
   cursor: not-allowed;

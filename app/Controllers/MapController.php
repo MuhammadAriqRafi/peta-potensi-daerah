@@ -2,27 +2,37 @@
 
 namespace App\Controllers;
 
-use App\Controllers\PostController;
+use App\Controllers\CRUDController;
 use App\Models\Category;
 use App\Models\Post;
 use Config\Services;
 
-class MapController extends PostController
+class MapController extends CRUDController
 {
-    protected $maps;
-
     public function __construct()
     {
-        $this->maps = new Post();
+        parent::__construct(new Post('map'));
     }
 
     public function index()
     {
+        $categories = new Category();
+
         $data = [
             'title' => 'Map Settings',
-            'maps' => $this->maps->getMaps(),
-            'validation' => Services::validation()
+            'maps' => $this->model->getMaps(),
+            'categories' => $categories->select('category_id, title')->get()->getResultArray(),
+            'statuses' => ['draft', 'publish'],
+            'indexUrl' => '/backend/maps/ajaxIndex',
+            'storeUrl' => '/backend/maps/ajaxStore',
+            'destroyUrl' => '/backend/maps/ajaxDestroy/',
+            'updateUrl' => '/backend/maps/ajaxUpdate/',
+            'editUrl' => '/backend/maps/ajaxEdit/',
         ];
+
+        foreach ($data['categories'] as $key => $category) {
+            $data['categories'][$key]['category_id'] = base64_encode($category['category_id']);
+        }
 
         return view('map/index', $data);
     }
@@ -165,7 +175,68 @@ class MapController extends PostController
     // ? Ajax Methods
     public function ajaxIndex()
     {
-        $uri = service('uri');
-        return $this->ajaxGetDataDataTables($uri->getSegment(2), $this->maps);
+        return parent::ajaxIndex();
+    }
+
+    public function ajaxStore()
+    {
+        // ? Convert data to json before inserting to 'others' field in db
+        $othersData = [
+            'latitude' => $this->request->getVar('latitude'),
+            'longitude' => $this->request->getVar('longitude'),
+            'description' => $this->request->getVar('description'),
+            'youtube' => $this->request->getVar('youtube') ?? '',
+            'address' => $this->request->getVar('address'),
+        ];
+
+        $others = json_encode($othersData);
+        $title = $this->request->getVar('title');
+        $cover = $this->request->getFile('cover');
+
+        $data = [
+            'image' => '',
+            'category_id' => base64_decode($this->request->getVar('category')),
+            'date_publish' => $this->request->getVar('date_publish'),
+            'kecamatan' => $this->request->getVar('kecamatan'),
+            'status' => $this->request->getVar('status'),
+            'slug' => url_title($title, '-', true),
+            'post_type' => 'map',
+            'others' => $others,
+            'title' => $title,
+        ];
+
+        if ($cover) {
+            $file = [
+                'image_file' => $cover,
+                'image_path' => 'img/',
+                'image_context' => 'map'
+            ];
+            $data = array_merge($data, $file);
+        } else {
+            $data['image'] = null;
+        }
+
+        $this->setData($data);
+        return parent::ajaxStore();
+    }
+
+    public function ajaxEdit($id = null)
+    {
+        $this->setData(['select' => 'title, DATE(date_publish) as date_publish, category_id, kecamatan, others, status, image, post_id']);
+        return parent::ajaxEdit($id);
+    }
+
+    public function ajaxDestroy($id = null)
+    {
+        $mapId = base64_decode($id);
+        $map = $this->model->find($mapId);
+        $data = [
+            'image_name' => $map['image'],
+            'image_path' => 'img/',
+            'image_context' => 'map'
+        ];
+
+        $this->setData($data);
+        return $this->response->setJSON(parent::ajaxDestroy($id));
     }
 }

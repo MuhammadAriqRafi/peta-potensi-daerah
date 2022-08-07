@@ -51,7 +51,7 @@ if (!function_exists("encodeId")) {
 if (!function_exists("deleteImage")) {
     function deleteImage(string $imageName, string $folderPath = 'img/', string $context = null): string
     {
-        $message = $context . ' berhasil dihapus';
+        $message = ucfirst($context) . ' berhasil dihapus';
 
         try {
             unlink($folderPath . $imageName);

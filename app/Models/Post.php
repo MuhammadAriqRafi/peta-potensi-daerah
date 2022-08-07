@@ -37,9 +37,9 @@ class Post extends Model implements DatatableInterface, CRUDInterface
     public function getRecords($start, $length, $orderColumn, $orderDirection)
     {
         if ($this->context == 'map') {
-            return $this->select('post.title, category.title as category, author, DATE(date_publish), status, post_id')
+            return $this->select('post.title, category.title as category, author, DATE(date_publish) as date_publish, status, post_id')
                 ->join('category', 'post.category_id = category.category_id')
-                ->orderBy($orderColumn, $orderDirection)
+                ->orderBy($orderColumn ?? 'date_publish', $orderDirection)
                 ->findAll($length, $start);
         } else if ($this->context == 'profil') {
             return $this->select('title, author, DATE(date_publish), status, post_id')
@@ -52,9 +52,9 @@ class Post extends Model implements DatatableInterface, CRUDInterface
     public function getRecordSearch($search, $start, $length, $orderColumn, $orderDirection)
     {
         if ($this->context == 'map') {
-            return $this->select('post.title, category.title as category, author, DATE(date_publish), status, post_id')
+            return $this->select('post.title, category.title as category, author, DATE(date_publish) as date_publish, status, post_id')
                 ->join('category', 'post.category_id = category.category_id')
-                ->orderBy($orderColumn, $orderDirection)
+                ->orderBy($orderColumn ?? 'date_publish', $orderDirection)
                 ->where('post.post_type', 'map')
                 ->like('post.title', $search)
                 ->orLike('author', $search)
@@ -101,6 +101,16 @@ class Post extends Model implements DatatableInterface, CRUDInterface
     public function fetchValidationRules(): array
     {
         if ($this->context == 'map') {
+            return $rules = [
+                'title' => 'required',
+                'category' => 'required',
+                'kecamatan' => 'required',
+                'description' => 'required',
+                'status' => 'required',
+                'latitude' => 'required',
+                'longitude' => 'required',
+                'address' => 'required'
+            ];
         } else if ($this->context == 'profil') {
             return $rules = [
                 'title' => 'required',

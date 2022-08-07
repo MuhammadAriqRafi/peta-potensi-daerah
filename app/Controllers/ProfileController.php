@@ -30,18 +30,6 @@ class ProfileController extends CRUDController
         return view('profile/index', $data);
     }
 
-    public function edit($id = null)
-    {
-        $data = [
-            'title' => 'Edit Tentang Aplikasi',
-            'validation' => Services::validation(),
-            'profile' =>  $this->profiles->find(base64_decode($id)),
-            'statuses' => ['draft', 'publish']
-        ];
-
-        return view('profile/edit', $data);
-    }
-
     // Ajax Methods
     public function ajaxIndex()
     {
