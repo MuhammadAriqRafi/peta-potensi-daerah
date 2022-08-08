@@ -26,96 +26,15 @@
         <!-- Popup Form -->
         <form action="#" id="mapForm" enctype="multipart/form-data">
             <?= csrf_field(); ?>
-            <!-- Title Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Title</span>
-                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="title" />
-                <div id="error-title" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Date Publish Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Date Publish</span>
-                <input type="date" class="input input-bordered w-full max-w-xs my-2" name="date_publish" value="<?= (old('date_publish', date("Y-m-d"))); ?>" min="1900-01-01" max="<?= date("Y-12-31"); ?>" />
-                <div id="error-date_publish" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Kategori Dropdown -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold mb-2">Kategori</span>
-                <select name="category" class="select select-bordered w-full max-w-xs my-2">
-                    <option value="" hidden>Pilih Kategori</option>
-                    <?php foreach ($categories as $category) : ?>
-                        <option value="<?= $category['category_id']; ?>" <?= old('category') == $category['category_id'] ? 'selected' : ''; ?>><?= $category['title']; ?></option>
-                    <?php endforeach ?>
-                </select>
-                <div id="error-category" class="badge badge-error hidden"></div>
-            </div>
+            <div id="map" class="mb-3"></div>
             <!-- Kecamatan Dropdown -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
+            <!-- <div class="form-control mb-4" onclick="resetInvalidClass(this)">
                 <span class="label-text font-bold mb-2">Kecamatan</span>
                 <select name="kecamatan" id="kecamatan" class="select select-bordered w-full max-w-xs my-2">
                     <option value="" hidden>Pilih Kecamatan</option>
                 </select>
                 <div id="error-kecamatan" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Map Location -->
-            <div id="map" class="mb-3"></div>
-            <!-- Latitude Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Latitude</span>
-                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="latitude" id="latitude" />
-                <div id="error-latitude" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Longitude Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Longitude</span>
-                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="longitude" id="longitude" />
-                <div id="error-longitude" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Description Textarea -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold mb-2">Description</span>
-                <textarea id="summernote" name="description"><?= old('description'); ?></textarea>
-                <div id="error-description" class="badge badge-error hidden mt-2"></div>
-            </div>
-            <!-- Status Radio Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Status</span>
-                <div class="flex items-center gap-4 my-2">
-                    <?php foreach ($statuses as $status) : ?>
-                        <div class="flex items-center gap-4">
-                            <input type="radio" name="status" class="radio" value="<?= $status; ?>" />
-                            <label for="<?= $status; ?>"><?= ucfirst($status); ?></label>
-                        </div>
-                    <?php endforeach ?>
-                </div>
-                <div id="error-status" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Cover Input File -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Cover</span>
-                <img src="#" height="100" class="img-thumbnail img-preview mb-2">
-                <input type="file" id="cover" class="input input-bordered w-full max-w-xs my-2" name="cover" onchange="previewImg()" accept="image/jpg, image/jpeg, image/png" />
-                <div id="error-cover" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Video Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Video</span>
-                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="youtube" />
-                <div id="error-youtube" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Address Textarea -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Address</span>
-                <textarea class="textarea textarea-bordered my-2" name="address"></textarea>
-                <div id="error-address" class="badge badge-error hidden"></div>
-            </div>
-
-
-            <!-- Modal Action Buttons -->
-            <div class="modal-action">
-                <label for="mapModal" class="btn btn-error">Batal</label>
-                <label id="mapFormActionBtn" class="btn btn-primary" onclick="save()">Tambah</label>
-            </div>
+            </div> -->
         </form>
         <!-- End of Popup Form -->
     </div>
@@ -349,6 +268,20 @@
         }
     }
 
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        draggable: true
+    }).addTo(map);
+
+    let marker = L.marker(new L.LatLng(<?= $latitude; ?>, <?= $longitude; ?>), {
+        draggable: true
+    }).addTo(map);
+
+    marker.on('dragend', function(e) {
+        latitude.value = marker.getLatLng().lat;
+        longitude.value = marker.getLatLng().lng;
+    });
+
     $(document).ready(function() {
         const table = createDataTable(mapTable, siteUrl + '<?= $indexUrl; ?>', [{
                 name: 'title',
@@ -381,36 +314,52 @@
         ]);
 
         let categories = <?= json_encode($categories) ?>;
-        let status = <?= json_encode($statuses) ?>;
+        let statuses = <?= json_encode($statuses) ?>;
 
-        // ? Fetch kecamatan data from https://ibnux.github.io/data-indonesia/kecamatan/1807.json
-        fetch(urlkecamatan)
+        // ! FIXME: Kecamatan is in the bottom due to its async behaviour, and the map should be declared in html, it should be in js, need fixing
+
+        $(`#${mapForm}`).append(textInputComponent('Title', 'title'));
+        $(`#${mapForm}`).append(dateInputComponent('Date Publish', 'date_publish'));
+        $(`#${mapForm}`).append(dropdownComponent('Kategori', 'category', categories));
+        const kecamatan = fetch(urlkecamatan)
             .then(response => response.json())
-            .then(function(data) {
-                return data.map(function(kecamatan) {
-                    let option = document.createElement("option");
-                    option.text = kecamatan.nama;
-                    option.value = kecamatan.nama;
-                    kecamatanSelect.add(option);
-                });
+            .then(data => {
+                data.forEach(kecamatan => delete kecamatan.id);
+                $(`#${mapForm}`).append(dropdownComponent('Kecamatan', 'kecamatan', data));
             })
             .catch(function(error) {
                 console.log(error);
             });
+        $(`#${mapForm}`).append(textInputComponent('Latitude', 'latitude', 'text', 'id="latitude"'));
+        $(`#${mapForm}`).append(textInputComponent('Longitude', 'longitude', 'text', 'id="longitude"'));
+        $(`#${mapForm}`).append(textareaComponent('Description', 'description', true));
+        $(`#${mapForm}`).append(selectInputComponent('Status', 'status', statuses));
+        $(`#${mapForm}`).append(fileInputComponent('Cover', 'cover'));
+        $(`#${mapForm}`).append(textInputComponent('Video', 'youtube'));
+        $(`#${mapForm}`).append(textInputComponent('Address', 'address'));
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            draggable: true
-        }).addTo(map);
+        // ? Modal Action Buttons
+        $(`#${mapForm}`).append(`
+            <div class="modal-action">
+                <label for="${mapModal}" class="btn btn-error">Batal</label>
+                <label id="${mapFormActionBtn}" class="btn btn-primary" onclick="save()">Tambah</label>
+            </div>
+        `);
 
-        let marker = L.marker(new L.LatLng(<?= $latitude; ?>, <?= $longitude; ?>), {
-            draggable: true
-        }).addTo(map);
-
-        marker.on('dragend', function(e) {
-            latitude.value = marker.getLatLng().lat;
-            longitude.value = marker.getLatLng().lng;
-        });
+        // ? Fetch kecamatan data from https://ibnux.github.io/data-indonesia/kecamatan/1807.json
+        // const kecamatan = fetch(urlkecamatan)
+        //     .then(response => response.json())
+        //     .then(function(data) {
+        //         return data.map(function(kecamatan) {
+        //             let option = document.createElement("option");
+        //             option.text = kecamatan.nama;
+        //             option.value = kecamatan.nama;
+        //             kecamatanSelect.add(option);
+        //         });
+        //     })
+        //     .catch(function(error) {
+        //         console.log(error);
+        //     });
 
         $('#summernote').summernote({
             tabsize: 2,

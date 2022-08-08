@@ -83,7 +83,8 @@ const dropdownComponent = (title, name, options) => {
     let optionList = '';
 
     options.forEach(option => {
-        optionList += `<option value="<?= $category['category_id']; ?>" <?= old('category') == $category['category_id'] ? 'selected' : ''; ?>><?= $category['title']; ?></option>`;
+        if(Object.keys(option).length == 1) optionList += `<option value="${option[Object.keys(option)[0]]}">${option[Object.keys(option)[0]]}</option>`;
+        else if (Object.keys(option).length == 2) optionList += `<option value="${option[Object.keys(option)[0]]}">${option[Object.keys(option)[1]]}</option>`
     });
 
     return `
@@ -93,6 +94,20 @@ const dropdownComponent = (title, name, options) => {
                 <option value="" hidden>-- Pilih ${capitalizedTitleFirstLetter} --</option>
                 ${optionList}
             </select>
+            <div id="error-${lowerCasedName}" class="badge badge-error hidden"></div>
+        </div>
+    `;
+}
+
+const fileInputComponent = (title, name) => {
+    const capitalizedTitleFirstLetter = capitalizeFirstLetter(title);
+    const lowerCasedName = name.toLowerCase();
+
+    return `
+        <div class="form-control mb-4" onclick="resetInvalidClass(this)">
+            <span class="label-text font-bold">${capitalizedTitleFirstLetter}</span>
+            <img src="#" height="100" class="img-thumbnail img-preview my-2">
+            <input type="file" id="${lowerCasedName}" class="input input-bordered w-full max-w-xs my-2" name="${lowerCasedName}" onchange="previewImg()" accept="image/jpg, image/jpeg, image/png" />
             <div id="error-${lowerCasedName}" class="badge badge-error hidden"></div>
         </div>
     `;

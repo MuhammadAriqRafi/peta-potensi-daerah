@@ -135,11 +135,11 @@
             contentType: false,
             dataType: "json",
             success: function(response) {
-                console.log(response);
                 if (response.status) {
                     alert(response.message);
                     reload(tableId);
                     $(`#${administratorForm}`).trigger('reset');
+                    resetInvalidClass($(`#${administratorForm}`));
                 } else {
                     if (response.input_error) displayError(response.input_error);
                 }
@@ -201,7 +201,7 @@
         $(`#${administratorForm}`).append(textInputComponent('Nama', 'nama'));
         $(`#${administratorForm}`).append(textInputComponent('Username', 'username'));
         $(`#${administratorForm}`).append(textInputComponent('Password', 'password', 'password'));
-        $(`#${administratorForm}`).append(textInputComponent('Password Confirm', 'passconf', 'passconf'));
+        $(`#${administratorForm}`).append(textInputComponent('Password Confirm', 'passconf', 'password'));
 
         // Modal Action Buttons
         $(`#${administratorForm}`).append(`

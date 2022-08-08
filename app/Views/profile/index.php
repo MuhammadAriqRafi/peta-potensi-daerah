@@ -199,7 +199,7 @@
             success: function(response) {
                 if (response.status) {
                     alert(response.message);
-                    reload(table);
+                    reload(tableId);
                 } else {
                     if (response.input_error) displayError(response.input_error);
                 }
@@ -244,11 +244,7 @@
         ]);
 
         // ? Form Inputs
-        let status = [];
-
-        <?php foreach ($statuses as $status) : ?>
-            status.push('<?= $status ?>');
-        <?php endforeach ?>
+        let status = <?= json_encode($statuses) ?>;
 
         $(`#${profileForm}`).append(textInputComponent('Title', 'title'));
         $(`#${profileForm}`).append(dateInputComponent('Date Publish', 'date_publish'));

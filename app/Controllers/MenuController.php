@@ -19,10 +19,7 @@ class MenuController extends CRUDController
             'title' => 'Menu',
             'menus' => $this->model->select('title, url, target, menu_id')->orderBy('menu_id', 'DESC')->findAll(),
             'validation' => Services::validation(),
-            'targets' => [
-                'Self' => '_self',
-                'Blank' => '_blank'
-            ],
+            'targets' => ['_self', '_blank'],
             'storeUrl' => '/backend/menus/ajaxStore',
             'editUrl' => '/backend/menus/ajaxEdit/',
             'updateUrl' => '/backend/menus/ajaxUpdate/',

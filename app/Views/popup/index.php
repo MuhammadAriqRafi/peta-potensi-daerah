@@ -12,25 +12,6 @@
         <!-- Popup Form -->
         <form id="popupForm" enctype="multipart/form-data">
             <?= csrf_field(); ?>
-            <!-- Title Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Judul</span>
-                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="title" />
-                <div id="error-title" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Image Input File -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Image</span>
-                <img src="#" height="100" class="img-thumbnail img-preview mb-2">
-                <input type="file" id="image" class="input input-bordered w-full max-w-xs my-2" name="image" onchange="previewImg()" accept="image/jpg, image/jpeg, image/png" />
-                <div id="error-image" class="badge badge-error hidden"></div>
-            </div>
-
-            <!-- Modal Action Buttons -->
-            <div class="modal-action">
-                <label for="popupModal" class="btn btn-error">Batal</label>
-                <label id="popupFormActionBtn" class="btn btn-primary" onclick="save()">Tambah</label>
-            </div>
         </form>
         <!-- End of Popup Form -->
     </div>
@@ -336,6 +317,18 @@
                 }
             },
         ]);
+
+        // ? Form Inputs
+        $(`#${popupForm}`).append(textInputComponent('Judul', 'title'));
+        $(`#${popupForm}`).append(fileInputComponent('Image', 'image'));
+
+        // ? Modal Action Buttons
+        $(`#${popupForm}`).append(`
+            <div class="modal-action">
+                <label for="${popupModal}" class="btn btn-error">Batal</label>
+                <label id="${popupFormActionBtn}" class="btn btn-primary" onclick="save()">Tambah</label>
+            </div>
+        `);
     });
 </script>
 <?= $this->endSection(); ?>

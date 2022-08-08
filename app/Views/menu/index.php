@@ -26,35 +26,7 @@
 
     <div class="basis-2/5">
         <h4 class="text-2xl font-semibold mb-4" id="formTitle">Tambah Data</h4>
-        <form method="POST" id="menuForm">
-            <!-- Title Input -->
-            <div class="mb-3" onclick="resetInvalidClass(this)">
-                <label for="title" class="label">Title</label>
-                <input type="text" class="input input-bordered w-full max-w-xs" name="title" id="title" autofocus />
-                <div id="error-title" class="badge badge-error mt-2 hidden"></div>
-            </div>
-            <!-- Url Input -->
-            <div class="mb-3" onclick="resetInvalidClass(this)">
-                <label for="url" class="label">Url</label>
-                <input type="text" class="input input-bordered w-full max-w-xs" name="url" id="url" autofocus />
-                <div id="error-url" class="badge badge-error mt-2 hidden"></div>
-            </div>
-            <!-- Status Radio Input -->
-            <div class="mb-3" onclick="resetInvalidClass(this)">
-                <label for="status" class="form-label fw-bold">Status</label><br>
-                <?php foreach ($targets as $key => $target) : ?>
-                    <div class="flex items-center gap-2">
-                        <input class="radio" type="radio" name="target" value="<?= $target; ?>">
-                        <label class="label" for="<?= $key; ?>"><?= ucfirst($key); ?></label>
-                    </div>
-                <?php endforeach ?>
-                <div id="error-target" class="badge badge-error mt-2 hidden"></div>
-            </div>
-
-            <div class="modal-footer d-flex justify-content-start">
-                <button type="button" id="formSubmitBtn" class="btn btn-primary mt-4" onclick="saveAndUpdate()">Tambah</button>
-            </div>
-        </form>
+        <form method="POST" id="menuForm"></form>
     </div>
 </div>
 <?= $this->endSection(); ?>
@@ -62,21 +34,20 @@
 <?= $this->section('script'); ?>
 <script src="<?= base_url('js/ajaxUtilities.js'); ?>"></script>
 <script>
-    const urlField = $('#url');
-    const titleField = $('#title');
-    const formTitle = $('#formTitle');
-    const formSubmitBtn = $('#formSubmitBtn');
+    const menuForm = 'menuForm';
+    const menuModalLabel = 'menuModalLabel';
+    const menuFormActionBtn = 'menuFormActionBtn';
 
     // Helper
     const hideEditForm = () => {
         // ? Reset validation error in the form
-        resetInvalidClass($('#menuForm'));
+        resetInvalidClass($(`#${menuForm}`));
 
-        formTitle.text('Tambah Data');
-        formSubmitBtn.text('Tambah');
-        formSubmitBtn.prev().remove();
-        titleField.val('');
-        urlField.val('');
+        $('#formTitle').text('Tambah Data');
+        $(`#${menuFormActionBtn}`).text('Tambah');
+        $(`#${menuFormActionBtn}`).prev().remove();
+        $('#title').val('');
+        $('#url').val('');
         $('input[type="hidden"]').remove();
         $(`input:radio`).prop('checked', false);
     }
@@ -104,7 +75,7 @@
             success: function(response) {
                 // ? Check if hidden input for id exist
                 if ($('#id').length < 1) {
-                    $('#menuForm').prepend(`
+                    $(`#${menuForm}`).prepend(`
                         <input type="hidden" name="_method" value="PATCH">
                         <input type="hidden" name="id" id="id" value="${response.menu_id}">
                     `);
@@ -115,15 +86,15 @@
                 // ? Reset validation error in the form
                 resetInvalidClass($('#menuForm'));
 
-                if (formTitle.text() != 'Edit Data') {
-                    formTitle.text('Edit Data');
-                    formSubmitBtn.text('Ubah');
-                    formSubmitBtn.before(`<button type="button" class="btn btn-error mr-4" onclick="hideEditForm()">Cancel</button>`)
-                    $('#menuForm').find('.is-invalid').removeClass('is-invalid');
+                if ($('#formTitle').text() != 'Edit Data') {
+                    $('#formTitle').text('Edit Data');
+                    $(`#${menuFormActionBtn}`).text('Ubah');
+                    $(`#${menuFormActionBtn}`).before(`<button type="button" class="btn btn-error mr-4" onclick="hideEditForm()">Cancel</button>`)
+                    $(`#${menuForm}`).find('.is-invalid').removeClass('is-invalid');
                 }
 
-                urlField.val(response.url);
-                titleField.val(response.title).focus();
+                $('#url').val(response.url);
+                $('#title').val(response.title).focus();
                 $(`input:radio[value="${response.target}"][name='target']`).prop('checked', true);
             },
             complete: function() {
@@ -143,11 +114,11 @@
             contentType: false,
             dataType: "json",
             beforeSend: function() {
-                $('#formSubmitBtn').text('Loading...');
+                $(`#${menuFormActionBtn}`).text('Loading...');
             },
             success: function(response) {
                 if (response.status) {
-                    $('#menuForm').trigger('reset');
+                    $(`#${menuForm}`).trigger('reset');
                     alert(response.message);
                     $(`thead`).prepend(`
                         <tr>    
@@ -165,7 +136,7 @@
                 }
             },
             complete: function() {
-                $('#formSubmitBtn').text('Tambah');
+                $(`#${menuFormActionBtn}`).text('Tambah');
             }
         });
     }
@@ -182,7 +153,7 @@
             processData: false,
             contentType: false,
             beforeSend: function() {
-                $('#formSubmitBtn').text('Loading...');
+                $(`#${menuFormActionBtn}`).text('Loading...');
             },
             success: function(response) {
                 if (response.status) {
@@ -193,20 +164,17 @@
                 }
             },
             complete: function() {
-                $('#formSubmitBtn').text('Ubah');
+                $(`#${menuFormActionBtn}`).text('Ubah');
             }
         });
     }
 
     const saveAndUpdate = () => {
-        const form = $('#menuForm')[0];
+        const form = $(`#${menuForm}`)[0];
         const data = new FormData(form);
 
-        if ($('#id').length < 1) {
-            store(data);
-        } else {
-            update(data);
-        }
+        if ($('#id').length < 1) store(data);
+        else update(data);
     }
 
     const destroy = (id) => {
@@ -225,5 +193,19 @@
             });
         }
     }
+
+    $(document).ready(function() {
+        let targets = <?= json_encode($targets) ?>;
+
+        $(`#${menuForm}`).append(textInputComponent('Title', 'title', 'text', 'id="title" autofocus'));
+        $(`#${menuForm}`).append(textInputComponent('Url', 'url', 'text', 'id="url" autofocus'));
+        $(`#${menuForm}`).append(selectInputComponent('Target', 'target', targets));
+
+        $(`#${menuForm}`).append(`
+            <div class="modal-footer d-flex justify-content-start">
+                <button type="button" id="menuFormActionBtn" class="btn btn-primary mt-4" onclick="saveAndUpdate()">Tambah</button>
+            </div>
+        `);
+    })
 </script>
 <?= $this->endSection(); ?>
