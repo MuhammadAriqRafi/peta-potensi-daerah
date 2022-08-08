@@ -380,6 +380,9 @@
             },
         ]);
 
+        let categories = <?= json_encode($categories) ?>;
+        let status = <?= json_encode($statuses) ?>;
+
         // ? Fetch kecamatan data from https://ibnux.github.io/data-indonesia/kecamatan/1807.json
         fetch(urlkecamatan)
             .then(response => response.json())

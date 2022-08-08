@@ -8,45 +8,7 @@
         <h3 id="administratorModalLabel" class="font-bold text-2xl sm:text-4xl mb-6"></h3>
 
         <!-- Popup Form -->
-        <form action="#" id="administratorForm">
-            <?= csrf_field(); ?>
-            <!-- NIK Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">NIK</span>
-                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="nik" />
-                <div id="error-nik" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Nama Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Nama</span>
-                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="nama" />
-                <div id="error-nama" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Username Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Username</span>
-                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="username" />
-                <div id="error-username" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Password Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Password</span>
-                <input type="password" class="input input-bordered w-full max-w-xs my-2" name="password" />
-                <div id="error-password" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Password Confirm Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Password Confirm</span>
-                <input type="password" class="input input-bordered w-full max-w-xs my-2" name="passconf" />
-                <div id="error-passconf" class="badge badge-error hidden"></div>
-            </div>
-
-            <!-- Modal Action Buttons -->
-            <div class="modal-action">
-                <label for="administratorModal" class="btn btn-error">Batal</label>
-                <label id="administratorFormActionBtn" class="btn btn-primary" onclick="save()"></label>
-            </div>
-        </form>
+        <form action="#" id="administratorForm"></form>
         <!-- End of Popup Form -->
     </div>
 </div>
@@ -233,6 +195,21 @@
                 }
             },
         ]);
+
+        // Form Inputs
+        $(`#${administratorForm}`).append(textInputComponent('NIK', 'nik'));
+        $(`#${administratorForm}`).append(textInputComponent('Nama', 'nama'));
+        $(`#${administratorForm}`).append(textInputComponent('Username', 'username'));
+        $(`#${administratorForm}`).append(textInputComponent('Password', 'password', 'password'));
+        $(`#${administratorForm}`).append(textInputComponent('Password Confirm', 'passconf', 'passconf'));
+
+        // Modal Action Buttons
+        $(`#${administratorForm}`).append(`
+            <div class="modal-action">
+                <label for="administratorModal" class="btn btn-error">Batal</label>
+                <label id="${administratorFormActionBtn}" class="btn btn-primary" onclick="save()"></label>
+            </div>
+        `);
     });
 </script>
 <?= $this->endSection(); ?>

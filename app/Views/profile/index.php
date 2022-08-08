@@ -16,49 +16,6 @@
         <!-- Popup Form -->
         <form action="#" id="profileForm">
             <?= csrf_field(); ?>
-            <!-- Title Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Title</span>
-                <input type="text" class="input input-bordered w-full max-w-xs my-2" name="title" />
-                <div id="error-title" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Date Publish Input Date -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Date Publish</span>
-                <input type="date" class="input input-bordered w-full max-w-xs my-2" name="date_publish" min="1900-01-01" max="<?= date("Y-12-31"); ?>" value="<?= date('Y-m-d'); ?>" />
-                <div id="error-date_publish" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Content Textarea -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold mb-2">Content</span>
-                <textarea id="summernote" name="content"></textarea>
-                <div id="error-content" class="badge badge-error hidden mt-2"></div>
-            </div>
-            <!-- Status Radio Input -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Status</span>
-                <div class="flex items-center gap-4 my-2">
-                    <?php foreach ($statuses as $status) : ?>
-                        <div class="flex items-center gap-4">
-                            <input type="radio" name="status" class="radio" value="<?= $status; ?>" />
-                            <label for="<?= $status; ?>"><?= ucfirst($status); ?></label>
-                        </div>
-                    <?php endforeach ?>
-                </div>
-                <div id="error-status" class="badge badge-error hidden"></div>
-            </div>
-            <!-- Description Textarea -->
-            <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold">Description</span>
-                <textarea class="textarea textarea-bordered my-2" name="description"></textarea>
-                <div id="error-description" class="badge badge-error hidden"></div>
-            </div>
-
-            <!-- Modal Action Buttons -->
-            <div class="modal-action">
-                <label for="profileModal" class="btn btn-error">Batal</label>
-                <label id="profileFormActionBtn" class="btn btn-primary" onclick="save()">Tambah</label>
-            </div>
         </form>
         <!-- End of Popup Form -->
     </div>
@@ -258,21 +215,6 @@
         else store(data);
     }
 
-    // ? Summernote
-    $('#summernote').summernote({
-        tabsize: 2,
-        height: 240,
-        toolbar: [
-            ['style', ['style']],
-            ['font', ['bold', 'underline', 'clear']],
-            ['color', ['color']],
-            ['para', ['ul', 'ol', 'paragraph']],
-            ['table', ['table']],
-            ['insert', ['link', 'picture', 'video']],
-            ['view', ['fullscreen', 'codeview', 'help']]
-        ]
-    });
-
     $(document).ready(function() {
         // ? DataTables
         const table = createDataTable('profileTable', siteUrl + '<?= $indexUrl; ?>', [{
@@ -300,6 +242,42 @@
                 }
             },
         ]);
+
+        // ? Form Inputs
+        let status = [];
+
+        <?php foreach ($statuses as $status) : ?>
+            status.push('<?= $status ?>');
+        <?php endforeach ?>
+
+        $(`#${profileForm}`).append(textInputComponent('Title', 'title'));
+        $(`#${profileForm}`).append(dateInputComponent('Date Publish', 'date_publish'));
+        $(`#${profileForm}`).append(textareaComponent('Content', 'content', true));
+        $(`#${profileForm}`).append(selectInputComponent('Status', 'status', status));
+        $(`#${profileForm}`).append(textareaComponent('Description', 'description'));
+
+        // ? Modal Action Buttons
+        $(`#${profileForm}`).append(`
+            <div class="modal-action">
+                <label for="${profileModal}" class="btn btn-error">Batal</label>
+                <label id="${profileFormActionBtn}" class="btn btn-primary" onclick="save()">Tambah</label>
+            </div>
+        `)
+
+        // ? Summernote
+        $('#summernote').summernote({
+            tabsize: 2,
+            height: 240,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ]
+        });
     });
 </script>
 <?= $this->endSection(); ?>
