@@ -278,10 +278,10 @@
             url: url,
             dataType: "json",
             success: function(response) {
-                console.log(response);
                 setFormState('Ubah', id);
                 const others = JSON.parse(response.others);
 
+                // ? Filling the form
                 $('input[name="title"]').val(response.title);
                 $('input[name="youtube"]').val(others.youtube);
                 $('input[name="latitude"]').val(others.latitude);
@@ -289,23 +289,45 @@
                 $('input[name="longitude"]').val(others.longitude);
                 $('#summernote').summernote('code', others.description);
                 $('input[name="date_publish"]').val(response.date_publish);
-                $('.img-preview').attr('src', baseUrl + `/img/${response.image}`);
                 $(`option[value="${response.kecamatan}"]`).prop('selected', true);
                 $(`option[value="${btoa(response.category_id)}"]`).prop('selected', true);
                 $(`input[name="status"][value="${response.status}"]`).prop('checked', true);
+                if (response.image) $('.img-preview').attr('src', baseUrl + `/img/${response.image}`);
 
                 $(`#${mapModal}`).prop('checked', true);
             }
         });
     };
 
-    const update = (id) => {}
+    const update = (data) => {
+        const url = $(`#${mapForm}`).attr('action');
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            processData: false,
+            contentType: false,
+            dataType: "json",
+            success: function(response) {
+                if (response.status) {
+                    alert(response.message);
+                    reload(tableId);
+                    $('#summernote').summernote('reset');
+                    $(`#${mapModal}`).prop('checked', false);
+                } else {
+                    if (response.input_error) displayError(response.input_error);
+                }
+            }
+        });
+    }
 
     const save = () => {
         const form = $(`#${mapForm}`)[0];
         const data = new FormData(form);
 
-        store(data);
+        if ($('input[name="_method"]').length > 0) update(data);
+        else store(data);
     }
 
     const destroy = (id) => {

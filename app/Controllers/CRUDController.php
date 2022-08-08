@@ -211,11 +211,8 @@ class CRUDController extends BaseController
         // ? Check if any image needs to be stored
         // ? Always put the field for the image in the first index of data variable
         if (array_key_exists('file', $this->data)) {
-            try {
-                unlink($this->data['file_path'] . $this->data['file_old']);
-                $this->data[array_key_first($this->data)] = storeAs($this->data['file'], $this->data['file_path'], $this->data['file_context']);
-            } catch (\Throwable $th) {
-            }
+            if ($this->data['file_old']) deleteImage($this->data['file_old'], $this->data['file_path'], $this->data['file_context']);
+            $this->data[array_key_first($this->data)] = storeAs($this->data['file'], $this->data['file_path'], $this->data['file_context']);
 
             unset($this->data['file']);
             unset($this->data['file_old']);

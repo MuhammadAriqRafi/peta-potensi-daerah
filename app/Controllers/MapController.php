@@ -51,54 +51,6 @@ class MapController extends CRUDController
         return view('map/create', $data);
     }
 
-    public function store()
-    {
-        if (!$this->validate([
-            'title' => 'required',
-            'date_publish' => 'required',
-            'category' => 'required',
-            'kecamatan' => 'required',
-            'description' => 'required',
-            'status' => 'required',
-            'latitude' => 'required',
-            'longitude' => 'required',
-            'address' => 'required'
-        ])) {
-            return redirect()->back()->withInput();
-        }
-
-        $title = $this->request->getVar('title');
-
-        // ? Convert data to json before inserting to 'others' field in db
-        $data = [
-            'latitude' => $this->request->getVar('latitude'),
-            'longitude' => $this->request->getVar('longitude'),
-            'description' => $this->request->getVar('description'),
-            'youtube' => $this->request->getVar('youtube') ?? '',
-            'address' => $this->request->getVar('address'),
-        ];
-        $others = json_encode($data);
-
-        // ? Move and get the image name
-        $image = $this->request->getFile('cover');
-        if ($image->getError() != 4) $imageName = storeAs($image, 'img/', 'map');
-        else $imageName = null;
-
-        $this->maps->save([
-            'category_id' => base64_decode($this->request->getVar('category')),
-            'date_publish' => $this->request->getVar('date_publish'),
-            'kecamatan' => $this->request->getVar('kecamatan'),
-            'status' => $this->request->getVar('status'),
-            'slug' => url_title($title, '-', true),
-            'image' => $imageName,
-            'post_type' => 'map',
-            'others' => $others,
-            'title' => $title,
-        ]);
-
-        return redirect()->route('backend.maps.index')->with('success', 'Map berhasil ditambahkan!');
-    }
-
     public function edit($id = null)
     {
         return $this->response->setJSON([$id]);
@@ -224,6 +176,53 @@ class MapController extends CRUDController
     {
         $this->setData(['select' => 'title, DATE(date_publish) as date_publish, category_id, kecamatan, others, status, image, post_id']);
         return parent::ajaxEdit($id);
+    }
+
+    public function ajaxUpdate($id = null)
+    {
+        $title = $this->request->getVar('title');
+
+        // ? Convert data to json before inserting to 'others' field in db
+        $others = [
+            'latitude' => $this->request->getVar('latitude'),
+            'longitude' => $this->request->getVar('longitude'),
+            'description' => $this->request->getVar('description'),
+            'youtube' => $this->request->getVar('youtube') ?? '',
+            'address' => $this->request->getVar('address'),
+        ];
+
+        $id = base64_decode($id);
+        $others = json_encode($others);
+        $cover = $this->request->getFile('cover');
+        $oldImage = $this->model->select('image')->find($id)['image'];
+
+        $data = [
+            'image' => $oldImage,
+            'post_id' => $id,
+            'category_id' => base64_decode($this->request->getVar('category')),
+            'date_publish' => $this->request->getVar('date_publish'),
+            'date_modify' => date("Y-m-d H:i:s", strtotime('now')),
+            'kecamatan' => $this->request->getVar('kecamatan'),
+            'status' => $this->request->getVar('status'),
+            'slug' => url_title($title, '-', true),
+            'post_type' => 'map',
+            'others' => $others,
+            'title' => $title,
+        ];
+
+        // ? If user input image
+        if ($cover->getError() != 4) {
+            $file = [
+                'file' => $cover,
+                'file_old' => $oldImage,
+                'file_path' => 'img/',
+                'file_context' => 'map'
+            ];
+            $data = array_merge($data, $file);
+        }
+
+        $this->setData($data);
+        return parent::ajaxUpdate($id);
     }
 
     public function ajaxDestroy($id = null)

@@ -79,11 +79,8 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
 
     // Settings Routes
     $routes->group('settings', function ($routes) {
+        $routes->get('/', 'SettingController::index', ['as' => 'backend.settings.index']);
         $routes->patch('(:any)', 'SettingController::$1');
-        $routes->get('(:any)', 'SettingController::$1');
-        // TODO: Rollback mpdf from vendor
-        // $routes->get('/', 'SettingController::index', ['as' => 'backend.settings.index']);
-        // $routes->patch('ajax/(:any)', 'SettingController::ajaxUpdate/$1', ['as' => 'backend.settings.update.ajax']);
     });
 
     // Menu Manager Routes
@@ -120,12 +117,6 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
         $routes->post('(:any)', 'MapController::$1');
         $routes->patch('(:any)', 'MapController::$1');
         $routes->delete('(:any)', 'MapController::$1');
-
-        // $routes->post('/', 'MapController::store', ['as' => 'backend.maps.store']);
-        // $routes->get('ajax', 'MapController::ajaxIndex', ['as' => 'backend.maps.index.ajax']);
-        // $routes->get('create', 'MapController::create', ['as' => 'backend.maps.create']);
-        // $routes->get('(:any)/edit', 'MapController::edit/$1', ['as' => 'backend.maps.edit']);
-        // $routes->patch('(:any)', 'MapController::update/$1', ['as' => 'backend.maps.update']);
     });
 
     // Profiles Routes
