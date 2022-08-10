@@ -18,46 +18,23 @@ class AdministratorController extends CRUDController
         $data = [
             'title' => 'Administrators',
             'administrators' => $this->model->getAdmins(),
-            'storeUrl' => '/backend/administrators/ajaxStore',
+            'storeUrl' => '/backend/administrators/store',
             'indexUrl' => '/backend/administrators/ajaxIndex',
-            'destroyUrl' => '/backend/administrators/ajaxDestroy/',
-            'editUrl' => '/backend/administrators/ajaxEdit/',
-            'updateUrl' => '/backend/administrators/ajaxUpdate/'
+            'destroyUrl' => '/backend/administrators/destroy/',
+            'editUrl' => '/backend/administrators/edit/',
+            'updateUrl' => '/backend/administrators/update/'
         ];
 
         return view('administrator/index', $data);
     }
 
-    public function update($id = null)
-    {
-        if (!$this->validate([
-            'nik' => 'required|is_unique[administrators.nik,nik,{nik}]',
-            'nama' => 'required',
-            'username' => 'required',
-            'password' => 'required',
-            'passconf' => 'required|matches[password]'
-        ])) {
-            return redirect()->back()->withInput();
-        }
-
-        $this->administrators->save([
-            'admin_id' => $id,
-            'nik' => $this->request->getVar('nik'),
-            'nama' => $this->request->getVar('nama'),
-            'username' => $this->request->getVar('username'),
-            'password' => $this->request->getVar('password')
-        ]);
-
-        return redirect()->back()->with('success', 'Administrator berhasil diubah!');
-    }
-
     // Ajax Methods
     public function ajaxIndex()
     {
-        return parent::ajaxIndex();
+        return parent::index();
     }
 
-    public function ajaxStore()
+    public function store()
     {
         $data = [
             'nik' => $this->request->getVar('nik'),
@@ -68,15 +45,15 @@ class AdministratorController extends CRUDController
 
         $this->setData($data);
         $this->setReturnRecentStoredData(true);
-        return parent::ajaxStore();
+        return parent::store();
     }
 
-    public function ajaxEdit($id = null)
+    public function edit($id = null)
     {
-        return parent::ajaxEdit($id);
+        return parent::edit($id);
     }
 
-    public function ajaxUpdate($id = null)
+    public function update($id = null)
     {
         // TODO: When validating, the is unique rule will check the id in admin table and match it with its request id field value, the problem is the requested id is still encoded, should be decoded before entering controller
         $id = base64_decode($id);
@@ -91,11 +68,11 @@ class AdministratorController extends CRUDController
 
         $this->setData($data);
 
-        return parent::ajaxUpdate($id);
+        return parent::update($id);
     }
 
-    public function ajaxDestroy($id = null)
+    public function destroy($id = null)
     {
-        return $this->response->setJSON(parent::ajaxDestroy($id));
+        return $this->response->setJSON(parent::destroy($id));
     }
 }

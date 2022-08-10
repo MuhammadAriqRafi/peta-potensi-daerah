@@ -37,7 +37,7 @@ class CRUDController extends BaseController
         ! The model should implement DatatableInterface
         ! The model should implement CRUDInterface
     */
-    protected function ajaxIndex()
+    protected function index()
     {
         helper('utilities');
         $draw = $this->request->getVar('draw');
@@ -81,7 +81,7 @@ class CRUDController extends BaseController
         * $this->data['image_context']: string
         * returnRecentStoredData: bool
     */
-    protected function ajaxStore()
+    protected function store()
     {
         // ? Validation
         $rules = $this->model->fetchValidationRules($this->data['validation_options'] ?? null);
@@ -133,7 +133,7 @@ class CRUDController extends BaseController
         * $this->data['image_path']: string
         * $this->data['image_context']: string
     */
-    protected function ajaxDestroy($id = null)
+    protected function destroy($id = null)
     {
         $id = base64_decode($id);
 
@@ -162,7 +162,7 @@ class CRUDController extends BaseController
         Available Properties:
         * $this->data['select']: array
     */
-    protected function ajaxEdit($id = null)
+    protected function edit($id = null)
     {
         // ? Decode $id
         $id = base64_decode($id);
@@ -188,7 +188,7 @@ class CRUDController extends BaseController
         * returnRecentStoredData['status']: bool
         * returnRecentStoredData['selected_fields']: string
     */
-    protected function ajaxUpdate($id = null)
+    protected function update($id = null)
     {
         // ? Validation
         $rules = $this->model->fetchValidationRules($this->data['validation_options'] ?? null);

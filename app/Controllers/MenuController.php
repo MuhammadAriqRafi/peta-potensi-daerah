@@ -20,10 +20,10 @@ class MenuController extends CRUDController
             'menus' => $this->model->select('title, url, target, menu_id')->orderBy('menu_id', 'DESC')->findAll(),
             'validation' => Services::validation(),
             'targets' => ['_self', '_blank'],
-            'storeUrl' => '/backend/menus/ajaxStore',
-            'editUrl' => '/backend/menus/ajaxEdit/',
-            'updateUrl' => '/backend/menus/ajaxUpdate/',
-            'destroyUrl' => '/backend/menus/ajaxDestroy/',
+            'storeUrl' => '/backend/menus/store',
+            'editUrl' => '/backend/menus/edit/',
+            'updateUrl' => '/backend/menus/update/',
+            'destroyUrl' => '/backend/menus/destroy/',
         ];
 
         foreach ($data['menus'] as $key => $menu) {
@@ -34,13 +34,13 @@ class MenuController extends CRUDController
     }
 
     // Ajax Methods
-    public function ajaxEdit($id = null)
+    public function edit($id = null)
     {
         $this->setData(['select' => 'title, url, target, menu_id']);
-        return parent::ajaxEdit($id);
+        return parent::edit($id);
     }
 
-    public function ajaxUpdate($id = null)
+    public function update($id = null)
     {
         // ? Decode $id
         $id = base64_decode($id);
@@ -58,10 +58,10 @@ class MenuController extends CRUDController
             'selected_fields' => 'menu_id, title, url, target'
         ]);
 
-        return parent::ajaxUpdate($id);
+        return parent::update($id);
     }
 
-    public function ajaxStore()
+    public function store()
     {
         $data = [
             'title' => $this->request->getVar('title'),
@@ -75,11 +75,11 @@ class MenuController extends CRUDController
             'selected_fields' => 'menu_id, title, url, target'
         ]);
 
-        return parent::ajaxStore();
+        return parent::store();
     }
 
-    public function ajaxDestroy($id = null)
+    public function destroy($id = null)
     {
-        return $this->response->setJSON(parent::ajaxDestroy($id));
+        return $this->response->setJSON(parent::destroy($id));
     }
 }

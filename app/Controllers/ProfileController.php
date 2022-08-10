@@ -20,11 +20,11 @@ class ProfileController extends CRUDController
             'profiles' => $this->model->getProfiles(),
             'statuses' => ['draft', 'publish'],
             'validation' => Services::validation(),
-            'storeUrl' => '/backend/profiles/ajaxStore',
+            'storeUrl' => '/backend/profiles/store',
             'indexUrl' => '/backend/profiles/ajaxIndex',
-            'destroyUrl' => '/backend/profiles/ajaxDestroy/',
-            'editUrl' => '/backend/profiles/ajaxEdit/',
-            'updateUrl' => '/backend/profiles/ajaxUpdate/',
+            'destroyUrl' => '/backend/profiles/destroy/',
+            'editUrl' => '/backend/profiles/edit/',
+            'updateUrl' => '/backend/profiles/update/',
         ];
 
         return view('profile/index', $data);
@@ -33,10 +33,10 @@ class ProfileController extends CRUDController
     // Ajax Methods
     public function ajaxIndex()
     {
-        return parent::ajaxIndex();
+        return parent::index();
     }
 
-    public function ajaxStore()
+    public function store()
     {
         $title = $this->request->getVar('title');
         $data = [
@@ -50,21 +50,21 @@ class ProfileController extends CRUDController
         ];
 
         $this->setData($data);
-        return parent::ajaxStore();
+        return parent::store();
     }
 
-    public function ajaxDestroy($id = null)
+    public function destroy($id = null)
     {
-        return $this->response->setJSON(parent::ajaxDestroy($id));
+        return $this->response->setJSON(parent::destroy($id));
     }
 
-    public function ajaxEdit($id = null)
+    public function edit($id = null)
     {
         $this->setData(['select' => 'title, DATE(date_publish) as date_publish, content, description, status, post_id']);
-        return parent::ajaxEdit($id);
+        return parent::edit($id);
     }
 
-    public function ajaxUpdate($id = null)
+    public function update($id = null)
     {
         // ? Decode $id
         $id = base64_decode($id);
@@ -83,6 +83,6 @@ class ProfileController extends CRUDController
         ];
 
         $this->setData($data);
-        return parent::ajaxUpdate($id);
+        return parent::update($id);
     }
 }

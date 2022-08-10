@@ -20,12 +20,12 @@ class PopupController extends CRUDController
             'popups' => $this->model->orderBy('popup_id', 'DESC')->findAll(),
             'validation' => Services::validation(),
             'currentActivePopup' => $this->model->where('status', 'active')->first(),
-            'storeUrl' => '/backend/popups/ajaxStore',
+            'storeUrl' => '/backend/popups/store',
             'indexUrl' => '/backend/popups/ajaxIndex',
-            'destroyUrl' => '/backend/popups/ajaxDestroy/',
-            'editUrl' => '/backend/popups/ajaxEdit/',
-            'updateUrl' => '/backend/popups/ajaxUpdate/',
-            'updateActivePopupUrl' => '/backend/popups/ajaxUpdateActivePopup',
+            'destroyUrl' => '/backend/popups/destroy/',
+            'editUrl' => '/backend/popups/edit/',
+            'updateUrl' => '/backend/popups/update/',
+            'updateActivePopupUrl' => '/backend/popups/updateActivePopup',
         ];
 
         $data['popups'] = encodeId($data['popups'], 'popup_id');
@@ -33,51 +33,13 @@ class PopupController extends CRUDController
         return view('popup/index', $data);
     }
 
-    public function edit($id = null)
-    {
-        $data = [
-            'title' => 'Edit Popup',
-            'popup' => $this->popup->find(base64_decode($id)),
-            'validation' => Services::validation()
-        ];
-
-        return view('popup/edit', $data);
-    }
-
-    public function update($id = null)
-    {
-        if (!$this->validate([
-            'title' => 'required',
-            'image' => 'max_size[image,1024]|is_image[image]|mime_in[image,image/jpg,image/jpeg,image/png]',
-        ])) {
-            return redirect()->back()->withInput();
-        }
-
-        $image = $this->request->getFile('image');
-        $oldImage = $this->request->getVar('oldImage');
-
-        if ($image->getError() != 4) {
-            $imageName = storeAs($image, 'img', 'popup');
-            unlink('img/' . $oldImage);
-        } else {
-            $imageName = $oldImage;
-        }
-
-        $this->popup->save([
-            'popup_id' => $id,
-            'title' => $this->request->getVar('title'),
-            'value' => $imageName
-        ]);
-
-        return redirect()->back()->with('success', 'Pop up berhasil diubah!');
-    }
-
     // Ajax Method
     public function ajaxIndex()
     {
-        return parent::ajaxIndex();
+        return parent::index();
     }
-    public function ajaxStore()
+
+    public function store()
     {
         $data = [
             'value' => '',
@@ -89,15 +51,15 @@ class PopupController extends CRUDController
         ];
 
         $this->setData($data);
-        return parent::ajaxStore();
+        return parent::store();
     }
 
-    public function ajaxEdit($id = null)
+    public function edit($id = null)
     {
-        return parent::ajaxEdit($id);
+        return parent::edit($id);
     }
 
-    public function ajaxUpdate($id = null)
+    public function update($id = null)
     {
         $id = base64_decode($this->request->getVar('id'));
         $oldImage = $this->request->getVar('oldImage');
@@ -126,10 +88,10 @@ class PopupController extends CRUDController
             'selected_fields' => 'title, value, status, popup_id'
         ]);
 
-        return parent::ajaxUpdate($id);
+        return parent::update($id);
     }
 
-    public function ajaxDestroy($id = null)
+    public function destroy($id = null)
     {
         $data = [
             'image_name' => $this->model->find(base64_decode($id))['value'],
@@ -138,12 +100,12 @@ class PopupController extends CRUDController
         ];
 
         $this->setData($data);
-        $response = parent::ajaxDestroy($id);
+        $response = parent::destroy($id);
         $response['isActivePopupExist'] = $this->model->isActivePopupExist();
         return $this->response->setJSON($response);
     }
 
-    public function ajaxUpdateActivePopup()
+    public function updateActivePopup()
     {
         if (!$this->validate(['id' => 'required'])) {
             return $this->response->setJSON(_validate(['id' => 'required']));

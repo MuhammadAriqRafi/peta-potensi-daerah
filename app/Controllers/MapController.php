@@ -24,10 +24,10 @@ class MapController extends CRUDController
             'categories' => $categories->select('category_id, title')->get()->getResultArray(),
             'statuses' => ['draft', 'publish'],
             'indexUrl' => '/backend/maps/ajaxIndex',
-            'storeUrl' => '/backend/maps/ajaxStore',
-            'destroyUrl' => '/backend/maps/ajaxDestroy/',
-            'updateUrl' => '/backend/maps/ajaxUpdate/',
-            'editUrl' => '/backend/maps/ajaxEdit/',
+            'storeUrl' => '/backend/maps/store',
+            'destroyUrl' => '/backend/maps/destroy/',
+            'updateUrl' => '/backend/maps/update/',
+            'editUrl' => '/backend/maps/edit/',
         ];
 
         foreach ($data['categories'] as $key => $category) {
@@ -37,100 +37,13 @@ class MapController extends CRUDController
         return view('map/index', $data);
     }
 
-    public function create()
-    {
-        $category = new Category();
-
-        $data = [
-            'title' => 'Tambah Map',
-            'validation' => Services::validation(),
-            'categories' => $category->select('category_id, title')->get()->getResultArray(),
-            'statuses' => ['draft', 'publish']
-        ];
-
-        return view('map/create', $data);
-    }
-
-    public function edit($id = null)
-    {
-        return $this->response->setJSON([$id]);
-        $category = new Category();
-        $map = $this->maps->find(base64_decode($id));
-        $others = json_decode($map['others'], true);
-
-        $data = [
-            'title' => 'Ubah Map',
-            'map' => $map,
-            'others' => $others,
-            'validation' => Services::validation(),
-            'categories' => $category->select('category_id, title')->get()->getResultArray(),
-            'statuses' => ['draft', 'publish']
-        ];
-
-        return view('map/edit', $data);
-    }
-
-    public function update($id = null)
-    {
-        if (!$this->validate([
-            'title' => 'required',
-            'date_publish' => 'required',
-            'category' => 'required',
-            'kecamatan' => 'required',
-            'description' => 'required',
-            'status' => 'required',
-            'latitude' => 'required',
-            'longitude' => 'required',
-            'address' => 'required'
-        ])) {
-            return redirect()->back()->withInput();
-        }
-
-        $title = $this->request->getVar('title');
-
-        // ? Convert data to json before inserting to 'others' field in db
-        $data = [
-            'latitude' => $this->request->getVar('latitude'),
-            'longitude' => $this->request->getVar('longitude'),
-            'description' => $this->request->getVar('description'),
-            'youtube' => $this->request->getVar('youtube') ?? '',
-            'address' => $this->request->getVar('address'),
-        ];
-        $others = json_encode($data);
-
-        // ? Move and get the image name
-        $image = $this->request->getFile('cover');
-        $oldImage = $this->request->getVar('oldImage');
-
-        if ($image->getError() != 4) {
-            $imageName = storeAs($image, 'img', 'map');
-            unlink('img/' . $oldImage);
-        } else $imageName = $oldImage;
-
-        $this->maps->save([
-            'post_id' => $id,
-            'category_id' => base64_decode($this->request->getVar('category')),
-            'date_publish' => $this->request->getVar('date_publish'),
-            'date_modify' => date("Y-m-d H:i:s", strtotime('now')),
-            'kecamatan' => $this->request->getVar('kecamatan'),
-            'status' => $this->request->getVar('status'),
-            'slug' => url_title($title, '-', true),
-            'image' => $imageName,
-            'post_type' => 'map',
-            'others' => $others,
-            'title' => $title,
-        ]);
-
-        return redirect()->route('backend.maps.index')->with('success', 'Map berhasil diubah!');
-    }
-
     // ? Ajax Methods
     public function ajaxIndex()
     {
-        return parent::ajaxIndex();
+        return parent::index();
     }
 
-    public function ajaxStore()
+    public function store()
     {
         // ? Convert data to json before inserting to 'others' field in db
         $othersData = [
@@ -169,16 +82,16 @@ class MapController extends CRUDController
         }
 
         $this->setData($data);
-        return parent::ajaxStore();
+        return parent::store();
     }
 
-    public function ajaxEdit($id = null)
+    public function edit($id = null)
     {
         $this->setData(['select' => 'title, DATE(date_publish) as date_publish, category_id, kecamatan, others, status, image, post_id']);
-        return parent::ajaxEdit($id);
+        return parent::edit($id);
     }
 
-    public function ajaxUpdate($id = null)
+    public function update($id = null)
     {
         $title = $this->request->getVar('title');
 
@@ -222,10 +135,10 @@ class MapController extends CRUDController
         }
 
         $this->setData($data);
-        return parent::ajaxUpdate($id);
+        return parent::update($id);
     }
 
-    public function ajaxDestroy($id = null)
+    public function destroy($id = null)
     {
         $mapId = base64_decode($id);
         $map = $this->model->find($mapId);
@@ -236,6 +149,6 @@ class MapController extends CRUDController
         ];
 
         $this->setData($data);
-        return $this->response->setJSON(parent::ajaxDestroy($id));
+        return $this->response->setJSON(parent::destroy($id));
     }
 }

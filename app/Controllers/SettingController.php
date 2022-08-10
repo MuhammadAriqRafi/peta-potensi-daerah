@@ -17,13 +17,13 @@ class SettingController extends CRUDController
         $data = [
             'title' => 'Settings',
             'settings'  => $this->model->findAll(),
-            'updateUrl' => '/backend/settings/ajaxUpdate/',
+            'updateUrl' => '/backend/settings/update/',
         ];
 
         return view('setting/index', $data);
     }
 
-    public function ajaxUpdate($id = null)
+    public function update($id = null)
     {
         // ? Decode $id
         $id = base64_decode($id);
@@ -60,6 +60,6 @@ class SettingController extends CRUDController
             'status' => true,
             'selected_fields' => 'keyword, value, setting_id, type'
         ]);
-        return parent::ajaxUpdate($id);
+        return parent::update($id);
     }
 }
