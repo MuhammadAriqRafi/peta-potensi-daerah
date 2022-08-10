@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\Administrator;
 use App\Models\Visitor;
 use Config\Services;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 if (!function_exists("checkSessionId")) {
     function checkSessionId()
@@ -17,6 +20,30 @@ if (!function_exists("checkSessionId")) {
                 'ip' => $clientIP,
                 'user_agent' => $clientUserAgent
             ]);
+        }
+    }
+}
+
+if (!function_exists("validateJWT")) {
+    function validateJWT(string $jwt): bool
+    {
+        try {
+            $payload = JWT::decode($jwt, new Key(Administrator::$SECRET_KEY, 'HS256'));
+            return true;
+        } catch (\Throwable $th) {
+            return false;
+        }
+    }
+}
+
+if (!function_exists("getJWTPayload")) {
+    function getJWTPayload(string $jwt): object
+    {
+        try {
+            $payload = JWT::decode($jwt, new Key(Administrator::$SECRET_KEY, 'HS256'));
+            return $payload;
+        } catch (\Throwable $th) {
+            return [];
         }
     }
 }

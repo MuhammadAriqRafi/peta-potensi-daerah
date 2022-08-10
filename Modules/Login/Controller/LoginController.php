@@ -5,6 +5,7 @@ namespace Modules\Login\Controller;
 use App\Controllers\BaseController;
 use App\Models\Administrator;
 use Config\Services;
+use Firebase\JWT\JWT;
 
 class LoginController extends BaseController
 {
@@ -34,22 +35,22 @@ class LoginController extends BaseController
         }
 
         $administratorModel = new Administrator();
-        $administrator = $administratorModel->where('username', $this->request->getVar('username'))->first();
+        $administrator = $administratorModel->select('nama, admin_id')
+            ->where('username', $this->request->getVar('username'))
+            ->first();
 
-        $data = [
+        $payload = [
             'admin_id' => base64_encode($administrator['admin_id']),
-            'username' => $administrator['username'],
-            'isLoggedIn' => true,
+            'nama' => $administrator['nama']
         ];
 
-        session()->set($data);
+        $jwt = JWT::encode($payload, Administrator::$SECRET_KEY, 'HS256');
 
-        return redirect()->route('backend.dashboard.index');
+        return $this->response->setCookie('X-PPD-SESSION', $jwt, '', '', '', '', '', true, '')->redirect('/backend');
     }
 
     public function logout()
     {
-        session()->destroy();
-        return redirect()->route('login.index');
+        return $this->response->setCookie('X-PPD-SESSION', '')->redirect('/backend/login');
     }
 }

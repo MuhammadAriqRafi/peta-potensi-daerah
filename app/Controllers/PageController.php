@@ -35,8 +35,11 @@ class PageController extends BaseController
 
     public function backend_dashboard()
     {
+        helper('session_management');
+        $session = getJWTPayload($this->request->getCookie('X-PPD-SESSION'));
+
         $data = [
-            'title' => 'Dashboard',
+            'title' => 'Hi ' . ucfirst($session->nama) . "!, Here's our visitors data",
             'visitors' => [
                 'total' => $this->visitors->countAllResults(),
                 'week' => $this->visitors->countVisitorInAWeek(),
