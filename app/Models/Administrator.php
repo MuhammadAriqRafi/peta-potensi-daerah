@@ -22,6 +22,8 @@ class Administrator extends Model implements DatatableInterface, CRUDInterface
     protected $allowCallbacks = true;
     protected $beforeInsert   = ['hashPassword'];
     protected $beforeUpdate   = ['hashPassword'];
+
+    // Custom Constant
     public static $SECRET_KEY = 'adwq54dr1qwd172eyd1d103r3e10i1e192u0adj12rur013y1bdadmnzc0qrf130r110012jsapo3';
 
     protected function hashPassword(array $data)

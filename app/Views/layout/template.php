@@ -10,11 +10,6 @@
 
     <?php
     helper('guestbook');
-    $uri = service('uri');
-
-    if ($uri->getSegment(2) === 'guestbooks' && $uri->getTotalSegments() === 3) {
-        setStatusRead($guestbook['guestbook_id']);
-    }
     ?>
 
     <!-- Jquery -->

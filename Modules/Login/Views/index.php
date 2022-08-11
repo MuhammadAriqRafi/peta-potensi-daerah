@@ -24,7 +24,7 @@
                         <!-- Username Input -->
                         <div class="mb-3">
                             <label for="username" class="form-label fw-bold">Username</label>
-                            <input type="text" name="username" class="form-control <?= ($validation->hasError('username') ? 'is-invalid' : ''); ?>" value="<?= (old('username')); ?>">
+                            <input type="text" name="username" class="form-control <?= ($validation->hasError('username') ? 'is-invalid' : ''); ?>" value="<?= (old('username')); ?>" autofocus>
                             <div class="invalid-feedback">
                                 <?= $validation->getError('username'); ?>
                             </div>

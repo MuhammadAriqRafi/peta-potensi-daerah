@@ -63,9 +63,11 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
 
     // Guestbooks Routes
     $routes->group('guestbooks', function ($routes) {
-        $routes->get('(:any)', 'GuestbookController::show/$1', ['as' => 'backend.guestbooks.show']);
         $routes->get('/', 'GuestbookController::index', ['as' => 'backend.guestbooks.index']);
-        $routes->delete('(:num)', 'GuestbookController::destroy/$1', ['as' => 'backend.guestbooks.destroy']);
+        $routes->get('(:any)', 'GuestbookController::$1');
+        $routes->delete('(:any)', 'GuestbookController::$1');
+        // $routes->get('(:any)', 'GuestbookController::show/$1', ['as' => 'backend.guestbooks.show']);
+        // $routes->delete('(:num)', 'GuestbookController::destroy/$1', ['as' => 'backend.guestbooks.destroy']);
     });
 
     // Popups Routes

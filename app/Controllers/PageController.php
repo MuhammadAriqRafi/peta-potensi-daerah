@@ -27,7 +27,8 @@ class PageController extends BaseController
             'title' => 'Peta Potensi Daerah Lampung Timur',
             'categories' => $this->categories->findAll(),
             'menus' => $this->menus->findAll(),
-            'validation' => Services::validation()
+            'validation' => Services::validation(),
+            'storeUrl' => '/',
         ];
 
         return view('pages/index', $data);

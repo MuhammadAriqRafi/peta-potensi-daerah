@@ -63,3 +63,17 @@ if (!function_exists("deleteImage")) {
         return $message;
     }
 }
+
+if (!function_exists("getCurrentEpochTime")) {
+    function getCurrentEpochTime()
+    {
+        return $milliseconds = round(microtime(true) * 1000);
+    }
+}
+
+if (!function_exists("convertEpochTimeToDate")) {
+    function convertEpochTimeToDate($epochTime)
+    {
+        return date("Y-m-d H:i:s", substr($epochTime, 0, 10));
+    }
+}

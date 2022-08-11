@@ -1,58 +1,92 @@
 <?= $this->extend('layout/template'); ?>
 
 <?= $this->section('content'); ?>
-<?= $this->include('layout/flashMessageAlert'); ?>
-
-<table class="table w-full" id="guestbookTable">
+<table class="table table-zebra w-full" id="guestbookTable">
     <thead>
-        <th>Action</th>
-        <th>Title</th>
-        <th>From</th>
-        <th>Date</th>
-        <th>Status</th>
+        <tr>
+            <th>Action</th>
+            <th>Title</th>
+            <th>From</th>
+            <th>Date</th>
+            <th>Status</th>
+        </tr>
     </thead>
-    <tbody>
-        <?php foreach ($guestbooks as $guestbook) : ?>
-            <tr>
-                <td>
-                    <form action="<?= route_to('backend.guestbooks.destroy', $guestbook['guestbook_id']); ?>" method="POST">
-                        <?= csrf_field(); ?>
-                        <input type="hidden" name="_method" value="DELETE">
-                        <a href="<?= route_to('backend.guestbooks.show', base64_encode($guestbook['guestbook_id'])); ?>" class="btn btn-sm btn-outline-primary">Read</a>
-                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">Delete</button>
-                    </form>
-                </td>
-                <td><?= $guestbook['title']; ?></td>
-                <td>
-                    <?= $guestbook['name']; ?><br>
-                    <small><?= $guestbook['email']; ?></small>
-                </td>
-                <td><?= date('d-m-Y', strtotime($guestbook['date_create'])); ?></td>
-                <td>
-                    <button type="button" class="pe-none btn btn-sm btn-<?= $guestbook['status'] == 'read' ? 'success' : 'secondary'; ?>"><?= $guestbook['status']; ?></button>
-                </td>
-            </tr>
-        <?php endforeach ?>
-    </tbody>
 </table>
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>
+<script src="<?= base_url('js/ajaxUtilities.js'); ?>"></script>
 <script>
+    const tableId = 'guestbookTable';
+
+    // CRUD
+    const destroy = (id) => {
+        if (confirm('Apakah anda yakin?')) {
+            const url = siteUrl + '<?= $destroyUrl ?>' + id;
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: {
+                    _method: 'DELETE'
+                },
+                dataType: "json",
+                success: function(response) {
+                    if (response.status) {
+                        alert(response.message);
+                        reload(tableId);
+                    }
+                }
+            });
+        }
+    }
+
     $(document).ready(function() {
         // ? DataTables
-        let table = $('#guestbookTable').DataTable({
-            pageLength: 10,
-            lengthMenu: [
-                [10, 25, 50, 99999],
-                [10, 25, 50, 'All'],
-            ],
-            dom: '<"overflow-x-hidden"<"flex flex-wrap gap-4 justify-center sm:justify-between items-center mb-5"lf><t><"flex justify-between items-center mt-5"ip>>',
-            // TODO: Build serverSide functionality for datatables
-            // ajax: '<?= site_url(route_to('backend.profiles.index.ajax')); ?>',
-            // serverSide: true,
-            // deferRender: true
-        });
+        const table = createDataTable(tableId, siteUrl + '<?= $indexUrl ?>', [{
+                data: 'guestbook_id',
+                orderable: false,
+                searchable: false,
+                render: function(data) {
+                    return `
+                        <td>
+                            <a href="${siteUrl + '<?= $showUrl ?>' + data}" class="btn btn-sm btn-primary">Read</a>
+                            <a href="#" class="btn btn-sm btn-error" onclick="destroy('${data}')">Delete</a>
+                        </td>
+                    `;
+                }
+            },
+            {
+                name: 'title',
+                data: 'title'
+            },
+            {
+                name: 'from',
+                render: function(data, type, row) {
+                    return `
+                        <td>
+                            ${row.name}<br>
+                            <small>${row.email}</small>
+                        </td>
+                    `;
+                }
+            },
+            {
+                name: 'date_create',
+                data: 'date_create'
+            },
+            {
+                name: 'status',
+                data: 'status',
+                render: function(data) {
+                    return `
+                        <td>
+                            <button type="button" class="pe-none btn btn-sm btn-${data == 'read' ? 'success' : 'secondary'}">${data}</button>
+                        </td>
+                    `
+                }
+            },
+        ]);
     });
 </script>
 <?= $this->endSection(); ?>

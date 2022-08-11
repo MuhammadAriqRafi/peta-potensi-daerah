@@ -2,31 +2,36 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Controllers\CRUDController;
 use App\Models\Guestbook;
 
-class GuestbookController extends BaseController
+class GuestbookController extends CRUDController
 {
-    protected $guestbooks;
-
     public function __construct()
     {
-        $this->guestbooks = new Guestbook();
+        parent::__construct(new Guestbook());
     }
 
     public function index()
     {
         $data = [
             'title' => 'Guestbook',
-            'guestbooks' => $this->guestbooks->findAll(),
+            'indexUrl' => '/backend/guestbooks/ajaxIndex',
+            'destroyUrl' => '/backend/guestbooks/destroy/',
+            'showUrl' => '/backend/guestbooks/show/',
         ];
 
         return view('guestbook/index', $data);
     }
 
+    public function ajaxIndex()
+    {
+        return parent::index();
+    }
+
     public function show($id = null)
     {
-        $guestbook = $this->guestbooks->find(base64_decode($id));
+        $guestbook = $this->model->find(base64_decode($id));
 
         $data = [
             'title' => $guestbook['title'],
@@ -38,28 +43,19 @@ class GuestbookController extends BaseController
 
     public function store()
     {
-        if (!$this->validate([
-            'name' =>  'required',
-            'email' => 'required|valid_email',
-            'title' => 'required',
-            'messages' => 'required'
-        ])) {
-            return redirect()->back()->withInput();
-        }
-
-        $this->guestbooks->save([
+        $data = [
             'name' => $this->request->getVar('name'),
             'email' => $this->request->getVar('email'),
             'title' => $this->request->getVar('title'),
             'messages' => $this->request->getVar('messages')
-        ]);
+        ];
 
-        return redirect()->back()->with('success', 'Pesan berhasil terkirim!');
+        $this->setData($data);
+        return parent::store();
     }
 
     public function destroy($id = null)
     {
-        $this->guestbooks->delete($id);
-        return redirect()->back()->with('success', 'Pesan berhasil dihapus!');
+        return $this->response->setJSON(parent::destroy($id));
     }
 }
