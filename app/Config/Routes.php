@@ -102,10 +102,10 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
         // Categories Routes
         $routes->group('categories', function ($routes) {
             $routes->get('/', 'CategoryController::index', ['as' => 'backend.maps.categories.index']);
-            $routes->post('/', 'CategoryController::store', ['as' => 'backend.maps.categories.store']);
-            $routes->get('(:any)/edit', 'CategoryController::edit/$1', ['as' => 'backend.maps.categories.edit']);
-            $routes->patch('(:any)', 'CategoryController::update/$1', ['as' => 'backend.maps.categories.update']);
-            $routes->delete('(:any)', 'CategoryController::destroy/$1', ['as' => 'backend.maps.categories.destroy']);
+            $routes->get('(:any)', 'CategoryController::$1');
+            $routes->post('(:any)', 'CategoryController::$1');
+            $routes->patch('(:any)', 'CategoryController::$1');
+            $routes->delete('(:any)', 'CategoryController::$1');
         });
 
         // Galleries Routes

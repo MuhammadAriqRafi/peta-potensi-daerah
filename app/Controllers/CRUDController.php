@@ -79,6 +79,7 @@ class CRUDController extends BaseController
         * $this->data['image_name']: string
         * $this->data['image_path']: string
         * $this->data['image_context']: string
+        * $this->data['validation_options'] : string
         * returnRecentStoredData: bool
     */
     protected function store()

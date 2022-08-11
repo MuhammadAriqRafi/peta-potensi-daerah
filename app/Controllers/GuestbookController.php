@@ -7,6 +7,8 @@ use App\Models\Guestbook;
 
 class GuestbookController extends CRUDController
 {
+    // TODO: Alter date_create to integer, and then use epoch unix time as the date
+
     public function __construct()
     {
         parent::__construct(new Guestbook());

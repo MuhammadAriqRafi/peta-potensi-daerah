@@ -46,7 +46,7 @@ class LoginController extends BaseController
 
         $jwt = JWT::encode($payload, Administrator::$SECRET_KEY, 'HS256');
 
-        return $this->response->setCookie('X-PPD-SESSION', $jwt, '', '', '', '', '', true, '')->redirect('/backend');
+        return $this->response->setCookie('X-PPD-SESSION', $jwt, 10800, '', '', '', '', true, '')->redirect('/backend');
     }
 
     public function logout()

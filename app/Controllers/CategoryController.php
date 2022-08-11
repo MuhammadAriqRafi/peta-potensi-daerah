@@ -2,116 +2,120 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Controllers\CRUDController;
 use App\Models\Category;
 use Config\Services;
 
-class CategoryController extends BaseController
+class CategoryController extends CRUDController
 {
-
-    protected $categories;
-
     public function __construct()
     {
-        $this->categories = new Category();
+        parent::__construct(new Category());
     }
 
     public function index()
     {
         $data = [
             'title' => 'Category',
-            'categories' => $this->categories->findAll(),
-            'validation' => Services::validation()
+            'categories' => $this->model->findAll(),
+            'validation' => Services::validation(),
+            'indexUrl' => '/backend/maps/categories/ajaxIndex',
+            'storeUrl' => '/backend/maps/categories/store',
+            'editUrl' => '/backend/maps/categories/edit/',
+            'updateUrl' => '/backend/maps/categories/update/',
+            'destroyUrl' => '/backend/maps/categories/destroy/',
         ];
 
         return view('category/index', $data);
     }
 
+    public function ajaxIndex()
+    {
+        return parent::index();
+    }
+
     public function store()
     {
-        if (!$this->validate([
-            'title' => 'required|is_unique[category.title]',
-            'image' => [
-                'rules' => 'max_size[image,1024]|is_image[image]|mime_in[image,image/jpg,image/jpeg,image/png]',
-                'errors' => [
-                    'uploaded' => 'Image is required'
-                ]
-            ]
-        ])) {
-            return redirect()->back()->withInput();
-        }
-
-        $image = $this->request->getFile('image');
-
-        if ($image->getError() != 4) $imageName = storeAs($image, 'img', 'category');
-        else $imageName = null;
-
-        $this->categories->save([
+        $data = [
+            'image' => '',
             'post_type' => 'map',
-            'image' => $imageName,
             'title' => $this->request->getVar('title'),
             'slug' => url_title($this->request->getVar('title'), '-', true),
             'description' => $this->request->getVar('description'),
-        ]);
+            'validation_options' => [
+                'title' => 'is_unique[category.title]|',
+                'image' => 'uploaded[image]|'
+            ],
+        ];
 
-        return redirect()->back()->with('success', 'Category berhasil ditambahkan!');
+        $image = $this->request->getFile('image');
+
+        if ($image) {
+            $file = [
+                'image_file' => $image,
+                'image_path' => 'img/',
+                'image_context' => 'category',
+            ];
+            $data = array_merge($data, $file);
+        } else {
+            $data['image'] = null;
+        }
+
+        $this->setData($data);
+        return parent::store();
     }
 
     public function edit($id = null)
     {
-        $data = [
-            'title' => 'Edit Category',
-            'category' => $this->categories->find(base64_decode($id)),
-            'validation' => Services::validation()
-        ];
-
-        return view('category/edit', $data);
+        $this->setData(['select' => 'category_id, title, description, image']);
+        return parent::edit($id);
     }
 
     public function update($id = null)
     {
-        if (!$this->validate([
-            'title' => 'required|is_unique[category.title,title,{title}]',
-            'image' => [
-                'rules' => 'uploaded[image]|max_size[image,1024]|is_image[image]|mime_in[image,image/jpg,image/jpeg,image/png]',
-                'errors' => [
-                    'uploaded' => 'Image is required'
-                ]
-            ]
-        ])) {
-            return redirect()->back()->withInput();
-        }
-
+        $id = base64_decode($id);
         $image = $this->request->getFile('image');
-        $oldImage = $this->request->getVar('oldImage');
+        $oldImage = $this->model->select('image')->find($id)['image'];
 
-        if ($image->getError() != 4) {
-            $imageName = storeAs($image, 'img', 'category');
-            unlink('img/' . $oldImage);
-        } else $imageName = $oldImage;
-
-        $this->categories->save([
+        $data = [
+            'image' => $oldImage,
             'category_id' => $id,
             'post_type' => 'map',
-            'image' => $imageName,
             'title' => $this->request->getVar('title'),
             'slug' => url_title($this->request->getVar('title'), '-', true),
             'description' => $this->request->getVar('description'),
-        ]);
+            'validation_options' => [
+                'title' => "is_unique[category.title,category_id,{$id}]|"
+            ],
+        ];
 
-        return redirect()->back()->with('success', 'Category berhasil diubah!');
+        if ($image->getError() != 4) {
+            $file = [
+                'file' => $image,
+                'file_old' => $oldImage,
+                'file_path' => 'img/',
+                'file_context' => 'category',
+            ];
+            $data = array_merge($data, $file);
+        }
+
+        $this->setData($data);
+        return parent::update($id);
     }
 
     public function destroy($id = null)
     {
-        $category = $this->categories->find($id);
+        $image = $this->model->select('image')->find(base64_decode($id))['image'];
 
-        try {
-            unlink('img/' . $category['image']);
-        } catch (\Throwable $th) {
-            return redirect()->back()->with('error', $th->getMessage());
+        if ($image) {
+            $data = [
+                'image_name' => $image,
+                'image_path' => 'img/',
+                'image_context' => 'category'
+            ];
+            $this->setData($data);
         }
 
-        return redirect()->back()->with('success', 'Category berhasil dihapus!');
+        return $this->response->setJSON(parent::destroy($id));
     }
 }

@@ -42,8 +42,11 @@
 <?= $this->endSection(); ?>
 
 <?= $this->section('toolbar'); ?>
-<!-- The button to open modal -->
-<label for="mapModal" class="btn modal-button" onclick="create()">Tambah Data</label>
+<div class="btn-group">
+    <a href="<?= route_to('backend.maps.categories.index') ?>" class="btn btn-info mr-2">Category</a>
+    <!-- The button to open modal -->
+    <label for="mapModal" class="btn modal-button" onclick="create()">Tambah Data</label>
+</div>
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
