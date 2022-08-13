@@ -21,7 +21,9 @@
 <input type="checkbox" id="mapModal" class="modal-toggle" />
 <div class="modal modal-bottom sm:modal-middle">
     <div class="modal-box sm:p-8">
-        <h3 id="mapModalLabel" class="font-bold text-2xl sm:text-4xl mb-6">Tambah Map</h3>
+        <div id="mapModalHeader" class="flex justify-between mb-10">
+            <h3 id="mapModalLabel" class="font-bold text-2xl sm:text-4xl">Tambah Map</h3>
+        </div>
 
         <!-- Popup Form -->
         <form action="#" id="mapForm" enctype="multipart/form-data">
@@ -37,6 +39,10 @@
             </div> -->
         </form>
         <!-- End of Popup Form -->
+
+        <!-- Gallery -->
+        <div id="indexGalleryContainer"></div>
+        <!-- End of Gallery -->
     </div>
 </div>
 <?= $this->endSection(); ?>
@@ -79,10 +85,16 @@
 
     const mapTable = 'mapTable';
     const mapModal = 'mapModal';
+    const mapModalContentContainer = 'modal-box';
+    const mapModalHeader = 'mapModalHeader';
     const mapFormActionBtn = 'mapFormActionBtn';
     const mapModalLabel = 'mapModalLabel';
     const mapForm = 'mapForm';
     const tableId = 'mapTable';
+
+    const indexGalleryBtn = 'indexGalleryBtn';
+    const indexGalleryBackBtn = 'indexGalleryBackBtn';
+    const indexGalleryContainer = 'indexGalleryContainer';
 
     const latitude = $('#latitude')[0];
     const longitude = $('#longitude')[0];
@@ -117,9 +129,10 @@
             } else {
                 $('input[name="_method"]').remove();
                 $(`#${mapFormActionBtn}`).text(capitalizedStateFirstLetter);
-                $(`#${mapModalLabel}`).text(`${capitalizedStateFirstLetter} Tentang Aplikasi`);
+                $(`#${mapModalLabel}`).text(`${capitalizedStateFirstLetter} Map`);
                 $(`#${mapForm}`).trigger('reset');
                 $('#summernote').summernote('reset');
+                $(`#${indexGalleryBtn}`).remove();
             }
         } else if (capitalizedStateFirstLetter == 'Ubah') {
             // ? Set form action for 'Ubah'
@@ -132,8 +145,15 @@
                 $(`#${mapForm}`).prepend(`
                     <input type="hidden" name="_method" value="PATCH">
                 `);
+
+                // ? Append galeri foto button
+                $(`#${indexGalleryBtn}`).remove();
+                $(`#${mapModalHeader}`).append(renderIndexGalleryBtn(id));
+                $(`#${mapModalHeader}`).append(renderIndexGalleryBackBtn(id));
+                $(`#${indexGalleryBackBtn}`).hide();
+
                 $(`#${mapFormActionBtn}`).text(capitalizedStateFirstLetter);
-                $(`#${mapModalLabel}`).text(`${capitalizedStateFirstLetter} Tentang Aplikasi`);
+                $(`#${mapModalLabel}`).text(`${capitalizedStateFirstLetter} Map`);
             }
         }
     }
@@ -163,7 +183,60 @@
         });
     }
 
-    // CRUD
+    const renderFormFields = () => {
+        const categories = <?= json_encode($categories) ?>;
+        const statuses = <?= json_encode($statuses) ?>;
+
+        // ? Fetch kecamatan data from https://ibnux.github.io/data-indonesia/kecamatan/1807.json
+        const kecamatan = fetch(urlkecamatan)
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(kecamatan => delete kecamatan.id);
+                $(`#${mapForm}`).append(dropdownComponent('Kecamatan', 'kecamatan', data));
+            })
+            .catch(function(error) {
+                console.log(error);
+            });
+
+        // ! FIXME: Kecamatan is in the bottom due to its async behaviour, and the map should be declared in html, it should be in js, need fixing
+
+        $(`#${mapForm}`).append(textInputComponent('Title', 'title'));
+        $(`#${mapForm}`).append(dateInputComponent('Date Publish', 'date_publish'));
+        $(`#${mapForm}`).append(dropdownComponent('Kategori', 'category', categories));
+        $(`#${mapForm}`).append(textInputComponent('Latitude', 'latitude', 'text', 'id="latitude"'));
+        $(`#${mapForm}`).append(textInputComponent('Longitude', 'longitude', 'text', 'id="longitude"'));
+        $(`#${mapForm}`).append(textareaComponent('Description', 'description', true));
+        $(`#${mapForm}`).append(selectInputComponent('Status', 'status', statuses));
+        $(`#${mapForm}`).append(fileInputComponent('Cover', 'cover'));
+        $(`#${mapForm}`).append(textInputComponent('Video', 'youtube'));
+        $(`#${mapForm}`).append(textInputComponent('Address', 'address'));
+
+        // ? Modal Action Buttons
+        $(`#${mapForm}`).append(`
+            <div class="modal-action">
+                <label for="${mapModal}" class="btn btn-error">Batal</label>
+                <label id="${mapFormActionBtn}" class="btn btn-primary" onclick="save()">Tambah</label>
+            </div>
+        `);
+    }
+
+    const renderLeafletMap = () => {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            draggable: true
+        }).addTo(map);
+
+        let marker = L.marker(new L.LatLng(<?= $latitude; ?>, <?= $longitude; ?>), {
+            draggable: true
+        }).addTo(map);
+
+        marker.on('dragend', function(e) {
+            latitude.value = marker.getLatLng().lat;
+            longitude.value = marker.getLatLng().lng;
+        });
+    }
+
+    // Map CRUD
     const create = () => {
         setFormState('Tambah');
     }
@@ -271,19 +344,56 @@
         }
     }
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        draggable: true
-    }).addTo(map);
+    // Gallery CRUD
+    const indexGallery = (mapId) => {
+        const url = siteUrl + '<?= $galleryIndexUrl ?>' + mapId;
 
-    let marker = L.marker(new L.LatLng(<?= $latitude; ?>, <?= $longitude; ?>), {
-        draggable: true
-    }).addTo(map);
+        $.ajax({
+            type: "POST",
+            url: url,
+            dataType: "json",
+            success: function(response) {
+                console.log(response);
+                renderGallery(response);
+            }
+        });
+    }
 
-    marker.on('dragend', function(e) {
-        latitude.value = marker.getLatLng().lat;
-        longitude.value = marker.getLatLng().lng;
-    });
+    const renderIndexGalleryBtn = (mapId) => {
+        return `<button id="${indexGalleryBtn}" class="btn btn-primary" onclick="indexGallery('${mapId}')">Galeri Foto</button>`;
+    }
+
+    const renderIndexGalleryBackBtn = (mapId) => {
+        return `<button id="${indexGalleryBackBtn}" class="btn btn-primary" onclick="closeIndexGallery()">Kembali</button>`;
+    }
+
+    const renderGallery = (galleryData) => {
+        let gallery = '';
+
+        $(`#${indexGalleryBtn}`).hide();
+        $(`#${indexGalleryBackBtn}`).show();
+
+        galleryData.forEach(data => {
+            gallery += `
+                <div class="flex gap-x-20 items-center mb-2">
+                    <img src="${baseUrl}/img/${data.filename}" width="200" alt="">
+                    <a href="#" class="btn btn-sm btn-error" onclick="destroy('${data.foto_tempat_id}')">Delete</a>
+                </div>
+            `;
+        });
+
+        // ! The indexGalleryContainer always re-rendered, need fixing
+        $(`#${indexGalleryContainer}`).append(`${gallery}`);
+        $(`#${indexGalleryContainer}`).show();
+        $(`#${mapForm}`).hide();
+    }
+
+    const closeIndexGallery = () => {
+        $(`#${indexGalleryContainer}`).hide();
+        $(`#${mapForm}`).show();
+        $(`#${indexGalleryBackBtn}`).hide();
+        $(`#${indexGalleryBtn}`).show();
+    }
 
     $(document).ready(function() {
         const table = createDataTable(mapTable, siteUrl + '<?= $indexUrl; ?>', [{
@@ -316,53 +426,8 @@
             },
         ]);
 
-        let categories = <?= json_encode($categories) ?>;
-        let statuses = <?= json_encode($statuses) ?>;
-
-        // ! FIXME: Kecamatan is in the bottom due to its async behaviour, and the map should be declared in html, it should be in js, need fixing
-
-        $(`#${mapForm}`).append(textInputComponent('Title', 'title'));
-        $(`#${mapForm}`).append(dateInputComponent('Date Publish', 'date_publish'));
-        $(`#${mapForm}`).append(dropdownComponent('Kategori', 'category', categories));
-        const kecamatan = fetch(urlkecamatan)
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(kecamatan => delete kecamatan.id);
-                $(`#${mapForm}`).append(dropdownComponent('Kecamatan', 'kecamatan', data));
-            })
-            .catch(function(error) {
-                console.log(error);
-            });
-        $(`#${mapForm}`).append(textInputComponent('Latitude', 'latitude', 'text', 'id="latitude"'));
-        $(`#${mapForm}`).append(textInputComponent('Longitude', 'longitude', 'text', 'id="longitude"'));
-        $(`#${mapForm}`).append(textareaComponent('Description', 'description', true));
-        $(`#${mapForm}`).append(selectInputComponent('Status', 'status', statuses));
-        $(`#${mapForm}`).append(fileInputComponent('Cover', 'cover'));
-        $(`#${mapForm}`).append(textInputComponent('Video', 'youtube'));
-        $(`#${mapForm}`).append(textInputComponent('Address', 'address'));
-
-        // ? Modal Action Buttons
-        $(`#${mapForm}`).append(`
-            <div class="modal-action">
-                <label for="${mapModal}" class="btn btn-error">Batal</label>
-                <label id="${mapFormActionBtn}" class="btn btn-primary" onclick="save()">Tambah</label>
-            </div>
-        `);
-
-        // ? Fetch kecamatan data from https://ibnux.github.io/data-indonesia/kecamatan/1807.json
-        // const kecamatan = fetch(urlkecamatan)
-        //     .then(response => response.json())
-        //     .then(function(data) {
-        //         return data.map(function(kecamatan) {
-        //             let option = document.createElement("option");
-        //             option.text = kecamatan.nama;
-        //             option.value = kecamatan.nama;
-        //             kecamatanSelect.add(option);
-        //         });
-        //     })
-        //     .catch(function(error) {
-        //         console.log(error);
-        //     });
+        renderLeafletMap();
+        renderFormFields();
 
         $('#summernote').summernote({
             tabsize: 2,

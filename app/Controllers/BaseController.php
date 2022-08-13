@@ -47,7 +47,7 @@ abstract class BaseController extends Controller
 
         // Preload any models, libraries, etc, here.
         date_default_timezone_set('Asia/Jakarta');
-
+        session();
         // E.g.: $this->session = \Config\Services::session();
     }
 }

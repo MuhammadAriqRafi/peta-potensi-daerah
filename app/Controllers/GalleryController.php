@@ -17,14 +17,22 @@ class GalleryController extends BaseController
 
     public function index($id = null)
     {
-        $data = [
-            'title' => 'Gallery',
-            'fotos' => $this->fotoTempat->where('post_id', base64_decode($id))->get()->getResultArray(),
-            'post_id' => $id,
-            'validation' => Services::validation()
-        ];
+        $id = base64_decode($id);
+        $galleryPictures = $this->fotoTempat->select('foto_tempat_id, filename')
+            ->where('post_id', $id)
+            ->findAll();
 
-        return view('gallery/index', $data);
+        return $this->response->setJSON($galleryPictures);
+
+        // dd($galleryPictures);
+        // $data = [
+        //     'title' => 'Gallery',
+        //     'fotos' => $this->fotoTempat->where('post_id', base64_decode($id))->get()->getResultArray(),
+        //     'post_id' => $id,
+        //     'validation' => Services::validation()
+        // ];
+
+        // return view('gallery/index', $data);
     }
 
     public function store($id = null)

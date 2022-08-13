@@ -2,10 +2,10 @@
 
 <?= $this->section('content'); ?>
 <div class="flex justify-center items-center h-screen">
-    <div class="flex flex-col w-6/12">
+    <div class="flex flex-col w-4/12">
         <div class="flex justify-between items-center">
             <h1 class="text-4xl font-bold">Beranda</h1>
-            <a href="<?= route_to('login.index'); ?>" class="btn btn-primary h-min">Login</a>
+            <a href="<?= route_to('login.index'); ?>" class="btn btn-info h-min">Login</a>
         </div>
 
         <div>

@@ -110,8 +110,10 @@ $routes->group('backend', ['filter' => 'auth'], function ($routes) {
 
         // Galleries Routes
         $routes->group('galleries', function ($routes) {
-            $routes->get('(:any)', 'GalleryController::index/$1', ['as' => 'backend.maps.galleries.index']);
-            $routes->post('(:any)', 'GalleryController::store/$1', ['as' => 'backend.maps.galleries.store']);
+            $routes->get('/', 'GalleryController::index', ['as' => 'backend.maps.galleries.index']);
+            $routes->get('(:any)', 'GalleryController::index/$1');
+            $routes->post('(:any)', 'GalleryController::index/$1');
+            // $routes->post('(:any)', 'GalleryController::store/$1', ['as' => 'backend.maps.galleries.store']);
         });
 
         $routes->get('/', 'MapController::index', ['as' => 'backend.maps.index']);

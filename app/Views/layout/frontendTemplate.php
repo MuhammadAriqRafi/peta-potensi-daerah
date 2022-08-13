@@ -23,6 +23,7 @@
 
 <body>
     <?php
+    helper('session_management');
     checkSessionId();
     ?>
 

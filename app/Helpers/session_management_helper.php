@@ -29,7 +29,13 @@ if (!function_exists("validateJWT")) {
     {
         try {
             $payload = JWT::decode($jwt, new Key(Administrator::$SECRET_KEY, 'HS256'));
-            return true;
+            $administratorModel = new Administrator();
+            $administrators = $administratorModel->select('status')
+                ->where('status', $payload->session_id)
+                ->get()->getRowArray();
+
+            if ($administrators) return true;
+            return false;
         } catch (\Throwable $th) {
             return false;
         }

@@ -16,7 +16,7 @@ class Administrator extends Model implements DatatableInterface, CRUDInterface
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['nik', 'nama', 'username', 'password'];
+    protected $allowedFields    = ['nik', 'nama', 'username', 'password', 'status'];
 
     // Callbacks
     protected $allowCallbacks = true;
@@ -28,7 +28,7 @@ class Administrator extends Model implements DatatableInterface, CRUDInterface
 
     protected function hashPassword(array $data)
     {
-        $data['data']['password'] = password_hash($data['data']['password'], PASSWORD_DEFAULT);
+        if (isset($data['data']['password'])) $data['data']['password'] = password_hash($data['data']['password'], PASSWORD_DEFAULT);
         return $data;
     }
 

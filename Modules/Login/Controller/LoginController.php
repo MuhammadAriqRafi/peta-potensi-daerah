@@ -6,10 +6,17 @@ use App\Controllers\BaseController;
 use App\Models\Administrator;
 use Config\Services;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 class LoginController extends BaseController
 {
     private $loginModulePath = 'Modules\Login\Views\\';
+    private $administrator;
+
+    public function __construct()
+    {
+        $this->administrator = new Administrator();
+    }
 
     public function index()
     {
@@ -20,9 +27,19 @@ class LoginController extends BaseController
         return view($this->loginModulePath . 'index', $data);
     }
 
-    public function authenticate()
+    private function generateJwt($payload)
     {
-        if (!$this->validate([
+        return JWT::encode($payload, Administrator::$SECRET_KEY, 'HS256');
+    }
+
+    private function getJwtPayload($jwt)
+    {
+        return JWT::decode($jwt, new Key(Administrator::$SECRET_KEY, 'HS256'));
+    }
+
+    private function validationRules()
+    {
+        return $rules = [
             'username' => 'required',
             'password' => [
                 'rules' => 'required|validate[username,password]',
@@ -30,27 +47,47 @@ class LoginController extends BaseController
                     'validate' => 'Email or Password don\'t match'
                 ]
             ]
-        ])) {
+        ];
+    }
+
+    public function authenticate()
+    {
+        $rules = $this->validationRules();
+        if (!$this->validate($rules)) {
             return redirect()->back()->withInput();
         }
 
-        $administratorModel = new Administrator();
-        $administrator = $administratorModel->select('nama, admin_id')
+        $administrator = $this->administrator->select('nama, admin_id')
             ->where('username', $this->request->getVar('username'))
             ->first();
-
         $payload = [
+            'session_id' => session_id(),
             'admin_id' => base64_encode($administrator['admin_id']),
             'nama' => $administrator['nama']
         ];
+        $administratorNewStatus = [
+            'admin_id' => $administrator['admin_id'],
+            'status' => session_id()
+        ];
 
-        $jwt = JWT::encode($payload, Administrator::$SECRET_KEY, 'HS256');
+        $jwt = $this->generateJwt($payload);
 
-        return $this->response->setCookie('X-PPD-SESSION', $jwt, 10800, '', '', '', '', true, '')->redirect('/backend');
+        if ($this->administrator->save($administratorNewStatus)) return $this->response->setCookie('X-PPD-SESSION', $jwt, 10800, '', '', '', '', true, '')->redirect('/backend');
+        else redirect()->back();
     }
 
     public function logout()
     {
-        return $this->response->setCookie('X-PPD-SESSION', '')->redirect('/backend/login');
+        $jwt = $this->request->getCookie('X-PPD-SESSION');
+        $payload = $this->getJwtPayload($jwt);
+        $administrator = $this->administrator->select('admin_id')
+            ->find(base64_decode($payload->admin_id))['admin_id'];
+        $administratorNewStatus = [
+            'admin_id' => $administrator,
+            'status' => null
+        ];
+
+        if ($this->administrator->save($administratorNewStatus)) return $this->response->setCookie('X-PPD-SESSION', '')->redirect('/backend/login');
+        else redirect()->back();
     }
 }
