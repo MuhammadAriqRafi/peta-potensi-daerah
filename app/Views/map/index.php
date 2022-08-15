@@ -14,6 +14,36 @@
 <!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin="" />
 <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
+
+<!-- Dropzone -->
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+<script>
+    Dropzone.options.fotoTempat = {
+        paramName: 'image',
+        autoProcessQueue: false,
+        addRemoveLinks: true,
+        parallelUploads: 5,
+        maxFileSize: 2048,
+        acceptedFiles: 'image/jpg, image/jpeg, image/png',
+
+        init: function() {
+            let myDropzone = this;
+
+            document.getElementById('dropzoneBtn').addEventListener('click', function() {
+                myDropzone.processQueue();
+            })
+
+            this.on('complete', function(file) {
+                myDropzone.removeFile(file);
+            })
+
+            this.on('successmultiple', function(response) {
+                console.log(response);
+            })
+        }
+    };
+</script>
 <?= $this->endSection(); ?>
 
 <?= $this->section('modal'); ?>
@@ -29,16 +59,17 @@
         <form action="#" id="mapForm" enctype="multipart/form-data">
             <?= csrf_field(); ?>
             <div id="map" class="mb-3"></div>
-            <!-- Kecamatan Dropdown -->
-            <!-- <div class="form-control mb-4" onclick="resetInvalidClass(this)">
-                <span class="label-text font-bold mb-2">Kecamatan</span>
-                <select name="kecamatan" id="kecamatan" class="select select-bordered w-full max-w-xs my-2">
-                    <option value="" hidden>Pilih Kecamatan</option>
-                </select>
-                <div id="error-kecamatan" class="badge badge-error hidden"></div>
-            </div> -->
         </form>
         <!-- End of Popup Form -->
+
+        <!-- Dropzone Store Gallery -->
+        <div id="storeGalleryDropzone" class="mb-10">
+            <form action="#" class="dropzone" method="POST" id="foto-tempat">
+                <input type="hidden" name="post_id" value="">
+            </form>
+            <button id="dropzoneBtn" class="btn btn-info my-4">Submit</button>
+        </div>
+        <!-- End of Dropzone Store Gallery -->
 
         <!-- Gallery -->
         <div id="indexGalleryContainer"></div>
@@ -95,6 +126,8 @@
     const indexGalleryBtn = 'indexGalleryBtn';
     const indexGalleryBackBtn = 'indexGalleryBackBtn';
     const indexGalleryContainer = 'indexGalleryContainer';
+    const storeGalleryDropzone = 'storeGalleryDropzone';
+    const storeGalleryDropzoneForm = 'foto-tempat';
 
     const latitude = $('#latitude')[0];
     const longitude = $('#longitude')[0];
@@ -114,6 +147,21 @@
         }
     }
 
+    const setModalLabelAndActionBtnText = (context) => {
+        $(`#${mapModalLabel}`).text(`${context} Map`);
+        $(`#${mapFormActionBtn}`).text(context);
+    }
+
+    const resetForm = () => {
+        $(`#${mapForm}`).trigger('reset');
+        $('#summernote').summernote('reset');
+    }
+
+    const removeGalleryBtnAndBackBtn = () => {
+        $(`#${indexGalleryBtn}`).remove();
+        $(`#${indexGalleryBackBtn}`).remove();
+    }
+
     const setFormState = (state, id = null) => {
         const capitalizedStateFirstLetter = state.charAt(0).toUpperCase() + state.slice(1);
 
@@ -128,15 +176,18 @@
                 return true;
             } else {
                 $('input[name="_method"]').remove();
-                $(`#${mapFormActionBtn}`).text(capitalizedStateFirstLetter);
-                $(`#${mapModalLabel}`).text(`${capitalizedStateFirstLetter} Map`);
-                $(`#${mapForm}`).trigger('reset');
-                $('#summernote').summernote('reset');
-                $(`#${indexGalleryBtn}`).remove();
+                setModalLabelAndActionBtnText(capitalizedStateFirstLetter);
+                removeGalleryBtnAndBackBtn();
+                resetForm();
             }
         } else if (capitalizedStateFirstLetter == 'Ubah') {
             // ? Set form action for 'Ubah'
             $(`#${mapForm}`).attr('action', siteUrl + '<?= $updateUrl; ?>' + id);
+            // ? Append galeri foto button
+            removeGalleryBtnAndBackBtn();
+            $(`#${mapModalHeader}`).append(renderIndexGalleryBtn(id));
+            $(`#${mapModalHeader}`).append(renderIndexGalleryBackBtn(id));
+            $(`#${indexGalleryBackBtn}`).hide();
 
             // ? If form current state is already 'Ubah'
             if ($('input[name="_method"]').length > 1) {
@@ -145,15 +196,7 @@
                 $(`#${mapForm}`).prepend(`
                     <input type="hidden" name="_method" value="PATCH">
                 `);
-
-                // ? Append galeri foto button
-                $(`#${indexGalleryBtn}`).remove();
-                $(`#${mapModalHeader}`).append(renderIndexGalleryBtn(id));
-                $(`#${mapModalHeader}`).append(renderIndexGalleryBackBtn(id));
-                $(`#${indexGalleryBackBtn}`).hide();
-
-                $(`#${mapFormActionBtn}`).text(capitalizedStateFirstLetter);
-                $(`#${mapModalLabel}`).text(`${capitalizedStateFirstLetter} Map`);
+                setModalLabelAndActionBtnText(capitalizedStateFirstLetter);
             }
         }
     }
@@ -255,8 +298,7 @@
                 if (response.status) {
                     alert(response.message);
                     reload(tableId);
-                    $(`#${mapForm}`).trigger('reset');
-                    $('#summernote').summernote('reset');
+                    resetForm();
                     $('.img-preview').attr('src', '#');
                 } else {
                     if (response.input_error) displayError(response.input_error);
@@ -353,8 +395,7 @@
             url: url,
             dataType: "json",
             success: function(response) {
-                console.log(response);
-                renderGallery(response);
+                renderGallery(mapId, response);
             }
         });
     }
@@ -367,24 +408,31 @@
         return `<button id="${indexGalleryBackBtn}" class="btn btn-primary" onclick="closeIndexGallery()">Kembali</button>`;
     }
 
-    const renderGallery = (galleryData) => {
+    const renderGallery = (mapId, galleryData) => {
         let gallery = '';
 
         $(`#${indexGalleryBtn}`).hide();
         $(`#${indexGalleryBackBtn}`).show();
 
-        galleryData.forEach(data => {
-            gallery += `
+        if (galleryData.length == 0) gallery = `<p class="text-center font-semibold text-yellow-600">Galeri Masih Kosong</p>`;
+        else {
+            galleryData.forEach(data => {
+                gallery += `
                 <div class="flex gap-x-20 items-center mb-2">
                     <img src="${baseUrl}/img/${data.filename}" width="200" alt="">
                     <a href="#" class="btn btn-sm btn-error" onclick="destroy('${data.foto_tempat_id}')">Delete</a>
                 </div>
             `;
-        });
+            });
+        }
 
         // ! The indexGalleryContainer always re-rendered, need fixing
+        $(`#${indexGalleryContainer}`).html('');
         $(`#${indexGalleryContainer}`).append(`${gallery}`);
         $(`#${indexGalleryContainer}`).show();
+        // ! FIXME: Dropzone url has been set based on the id passed to it, but it still wont hit the controller, need fixing
+        setStoreGalleryDropzoneUrl(mapId);
+        $(`#${storeGalleryDropzone}`).show();
         $(`#${mapForm}`).hide();
     }
 
@@ -393,6 +441,11 @@
         $(`#${mapForm}`).show();
         $(`#${indexGalleryBackBtn}`).hide();
         $(`#${indexGalleryBtn}`).show();
+    }
+
+    const setStoreGalleryDropzoneUrl = (mapId) => {
+        $(`#${storeGalleryDropzoneForm}`).attr('action', siteUrl + '<?= $galleryStoreUrl ?>' + mapId);
+        $('input[name="post_id"]').val(mapId);
     }
 
     $(document).ready(function() {
@@ -442,6 +495,8 @@
                 ['view', ['fullscreen', 'codeview', 'help']]
             ]
         });
+
+        $(`#${storeGalleryDropzone}`).hide();
     });
 </script>
 <?= $this->endSection(); ?>

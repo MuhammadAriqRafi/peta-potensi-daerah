@@ -76,6 +76,12 @@
                     <!-- End of Mobile Navbar Button -->
 
                     <div class="flex-none gap-2">
+                        <div class="btn-group hidden sm:inline">
+                            <a class="btn" href="<?= route_to('backend.guestbooks.index'); ?>">
+                                <span class="text-warning mr-2"><?= countUnreadMessages() ?></span> Guestbook
+                            </a>
+                        </div>
+
                         <!-- Profile Dropdows -->
                         <div class="dropdown dropdown-end">
                             <label tabindex="0" class="btn btn-ghost btn-circle avatar">
@@ -92,17 +98,10 @@
                                     </a>
                                 </li>
                                 <li><a>Settings</a></li>
-                                <li><a>Logout</a></li>
+                                <li><a class="btn btn-error mt-4" href="<?= route_to('logout'); ?>">Logout</a></li>
                             </ul>
                         </div>
                         <!-- End of Profile Dropdows -->
-
-                        <div class="btn-group hidden sm:inline">
-                            <a class="btn" href="<?= route_to('backend.guestbooks.index'); ?>">
-                                <span class="text-warning mr-2"><?= countUnreadMessages() ?></span> Guestbook
-                            </a>
-                            <a class="btn btn-active" href="<?= route_to('logout'); ?>">Logout</a>
-                        </div>
                     </div>
                 </div>
                 <!-- End of Navbar -->

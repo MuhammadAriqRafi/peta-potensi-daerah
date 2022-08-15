@@ -37,6 +37,7 @@ class GalleryController extends BaseController
 
     public function store($id = null)
     {
+        dd($this->request->getFile('image'), $id);
         $image = $this->request->getFile('image');
         $imageName =  storeAs($image, 'img', 'gallery');
 

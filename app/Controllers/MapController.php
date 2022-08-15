@@ -28,7 +28,8 @@ class MapController extends CRUDController
             'destroyUrl' => '/backend/maps/destroy/',
             'updateUrl' => '/backend/maps/update/',
             'editUrl' => '/backend/maps/edit/',
-            'galleryIndexUrl' => '/backend/maps/galleries/'
+            'galleryIndexUrl' => '/backend/maps/galleries/',
+            'galleryStoreUrl' => '/backend/maps/galleries/store/'
         ];
 
         foreach ($data['categories'] as $key => $category) {

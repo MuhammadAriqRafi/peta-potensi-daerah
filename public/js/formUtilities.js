@@ -83,7 +83,7 @@ const dropdownComponent = (title, name, options) => {
     let optionList = '';
 
     options.forEach(option => {
-        if(Object.keys(option).length == 1) optionList += `<option value="${option[Object.keys(option)[0]]}">${option[Object.keys(option)[0]]}</option>`;
+        if (Object.keys(option).length == 1) optionList += `<option value="${option[Object.keys(option)[0]]}">${option[Object.keys(option)[0]]}</option>`;
         else if (Object.keys(option).length == 2) optionList += `<option value="${option[Object.keys(option)[0]]}">${option[Object.keys(option)[1]]}</option>`
     });
 

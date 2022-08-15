@@ -43,8 +43,8 @@ class PageController extends BaseController
             'title' => 'Hi ' . ucfirst($session->nama) . "!, Here's our visitors data",
             'visitors' => [
                 'total' => $this->visitors->countAllResults(),
-                'week' => $this->visitors->countVisitorInAWeek(),
-                'month' => $this->visitors->countVisitorInAMonth(),
+                'weekly' => $this->visitors->countVisitorInAWeek(),
+                'monthly' => $this->visitors->countVisitorInAMonth(),
                 'today' => $this->visitors->countDailyVisitor()
             ]
         ];
